@@ -25,23 +25,11 @@ class AlignIndexes(object):
         assert numpy.all(self.indexes2 == numpy.int64(self.indexes2))
         assert len(self.indexes1) == len(self.indexes2)
 
-    @staticmethod
-    def get_aligned_feature(feature: AcousticFeature, indexes: numpy.ndarray):
-        is_target = lambda a: not numpy.any(numpy.isnan(a))
-        return AcousticFeature(
-            f0=feature.f0[indexes] if is_target(feature.f0) else numpy.nan,
-            sp=feature.sp[indexes] if is_target(feature.sp) else numpy.nan,
-            ap=feature.ap[indexes] if is_target(feature.ap) else numpy.nan,
-            coded_ap=feature.coded_ap[indexes] if is_target(feature.coded_ap) else numpy.nan,
-            mc=feature.mc[indexes] if is_target(feature.mc) else numpy.nan,
-            voiced=feature.voiced[indexes] if is_target(feature.voiced) else numpy.nan,
-        )
-
     def get_aligned_feature1(self):
-        return self.get_aligned_feature(self.feature1, self.indexes1)
+        return self.feature1.indexing(self.indexes1)
 
     def get_aligned_feature2(self):
-        return self.get_aligned_feature(self.feature2, self.indexes2)
+        return self.feature2.indexing(self.indexes2)
 
     @staticmethod
     def extract(feature1: AcousticFeature, feature2: AcousticFeature, dtype='int64'):
@@ -62,7 +50,7 @@ class AlignIndexes(object):
             self,
             path: Path,
             validate=False,
-            ignores: Tuple[str] = ('feature1', 'feature2'),
+            ignores: Tuple[str, ...] = ('feature1', 'feature2'),
     ):
         if validate:
             self.validate()

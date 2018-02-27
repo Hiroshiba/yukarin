@@ -13,7 +13,7 @@ import tqdm
 
 from yukarin.acoustic_feature import AcousticFeature
 from yukarin.align_indexes import AlignIndexes
-from yukarin.utility import save_arguments
+from yukarin.utility.json_utility import save_arguments
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--input_glob1', '-i1')

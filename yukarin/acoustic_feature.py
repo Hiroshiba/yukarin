@@ -5,19 +5,18 @@ import numpy
 import pysptk
 import pyworld
 
-from .param import AcousticParam
 from .wave import Wave
 
 
 class AcousticFeature(object):
     def __init__(
             self,
-            f0: numpy.ndarray,
-            sp: numpy.ndarray,
-            ap: numpy.ndarray,
-            coded_ap: numpy.ndarray,
-            mc: numpy.ndarray,
-            voiced: numpy.ndarray,
+            f0: numpy.ndarray = numpy.nan,
+            sp: numpy.ndarray = numpy.nan,
+            ap: numpy.ndarray = numpy.nan,
+            coded_ap: numpy.ndarray = numpy.nan,
+            mc: numpy.ndarray = numpy.nan,
+            voiced: numpy.ndarray = numpy.nan,
     ) -> None:
         self.f0 = f0
         self.sp = sp
@@ -44,6 +43,17 @@ class AcousticFeature(object):
             coded_ap=self.coded_ap.astype(dtype),
             mc=self.mc.astype(dtype),
             voiced=self.voiced,
+        )
+
+    def indexing(self, index: numpy.ndarray):
+        is_target = lambda a: not numpy.any(numpy.isnan(a))
+        return AcousticFeature(
+            f0=self.f0[index] if is_target(self.f0) else numpy.nan,
+            sp=self.sp[index] if is_target(self.sp) else numpy.nan,
+            ap=self.ap[index] if is_target(self.ap) else numpy.nan,
+            coded_ap=self.coded_ap[index] if is_target(self.coded_ap) else numpy.nan,
+            mc=self.mc[index] if is_target(self.mc) else numpy.nan,
+            voiced=self.voiced[index] if is_target(self.voiced) else numpy.nan,
         )
 
     def validate(self):
@@ -75,23 +85,23 @@ class AcousticFeature(object):
         )
 
     @staticmethod
-    def extract(wave: Wave, param: AcousticParam):
+    def extract(wave: Wave, frame_period, f0_floor, f0_ceil, fft_length, order, alpha, dtype):
         x = wave.wave.astype(numpy.float64)
         fs = wave.sampling_rate
 
         f0, t = pyworld.harvest(
             x,
             fs,
-            frame_period=param.frame_period,
-            f0_floor=param.f0_floor,
-            f0_ceil=param.f0_ceil,
+            frame_period=frame_period,
+            f0_floor=f0_floor,
+            f0_ceil=f0_ceil,
         )
 
         f0 = pyworld.stonemask(x, f0, t, fs)
-        sp = pyworld.cheaptrick(x, f0, t, fs)
-        ap = pyworld.d4c(x, f0, t, fs)
+        sp = pyworld.cheaptrick(x, f0, t, fs, fft_size=fft_length)
+        ap = pyworld.d4c(x, f0, t, fs, fft_size=fft_length)
 
-        mc = pysptk.sp2mc(sp, order=param.order, alpha=param.alpha)
+        mc = pysptk.sp2mc(sp, order=order, alpha=alpha)
         coded_ap = pyworld.code_aperiodicity(ap, fs)
         voiced = ~(f0 == 0)  # type: numpy.ndarray
 
@@ -103,7 +113,7 @@ class AcousticFeature(object):
             mc=mc,
             voiced=voiced[:, None],
         )
-        feature = feature.astype_only_float(param.dtype)
+        feature = feature.astype_only_float(dtype)
         feature.validate()
         return feature
 

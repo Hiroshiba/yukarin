@@ -17,7 +17,7 @@ import tqdm
 from yukarin.acoustic_feature import AcousticFeature
 from yukarin.align_indexes import AlignIndexes
 from yukarin.param import AcousticParam
-from yukarin.utility import save_arguments
+from yukarin.utility.json_utility import save_arguments
 
 base_acoustic_param = AcousticParam()
 

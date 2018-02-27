@@ -24,3 +24,14 @@ class Wave(object):
             wave=numpy.pad(self.wave, pad_width=(pre, post), mode='constant'),
             sampling_rate=self.sampling_rate,
         )
+
+    def get_effective_frame(self, threshold_db: float, fft_length: int, frame_period: float):
+        hop = self.sampling_rate * frame_period // 1000
+        length = int(numpy.ceil(len(self.wave) / hop + 0.0001))  # add micro value for WORLD
+
+        s = librosa.effects.split(y=self.wave, top_db=threshold_db, frame_length=fft_length, hop_length=hop) // hop
+        effective = numpy.zeros(length, dtype=bool)
+        for a, b in s:
+            effective[a:b] = True
+
+        return effective
