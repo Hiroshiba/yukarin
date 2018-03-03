@@ -22,3 +22,6 @@ class AcousticParam(object):
         self.f0_ceil = f0_ceil
         self.fft_length = fft_length
         self.dtype = dtype
+
+    def _asdict(self):
+        return self.__dict__
