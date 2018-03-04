@@ -6,8 +6,8 @@ from typing import List
 import chainer
 import numpy
 
-from yukarin import AcousticFeature
-from yukarin import AlignIndexes
+from yukarin.acoustic_feature import AcousticFeature
+from yukarin.align_indexes import AlignIndexes
 from yukarin.config import DatasetConfig
 
 

@@ -36,12 +36,13 @@ class AcousticFeature(object):
         )
 
     def astype_only_float(self, dtype):
+        is_target = lambda a: not numpy.any(numpy.isnan(a))
         return AcousticFeature(
-            f0=self.f0.astype(dtype),
-            sp=self.sp.astype(dtype),
-            ap=self.ap.astype(dtype),
-            coded_ap=self.coded_ap.astype(dtype),
-            mc=self.mc.astype(dtype),
+            f0=self.f0.astype(dtype) if is_target(self.f0) else numpy.nan,
+            sp=self.sp.astype(dtype) if is_target(self.sp) else numpy.nan,
+            ap=self.ap.astype(dtype) if is_target(self.ap) else numpy.nan,
+            coded_ap=self.coded_ap.astype(dtype) if is_target(self.coded_ap) else numpy.nan,
+            mc=self.mc.astype(dtype) if is_target(self.mc) else numpy.nan,
             voiced=self.voiced,
         )
 

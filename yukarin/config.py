@@ -59,8 +59,15 @@ class Config(NamedTuple):
     project: ProjectConfig
 
     def save_as_json(self, path):
-        # d = _namedtuple_to_dict(self)
-        json.dump(self, open(path, 'w'), indent=2, sort_keys=True, cls=JSONEncoder)
+        d = _namedtuple_to_dict(self)
+        json.dump(d, open(path, 'w'), indent=2, sort_keys=True, cls=JSONEncoder)
+
+
+def _namedtuple_to_dict(o: NamedTuple):
+    return {
+        k: v if not hasattr(v, '_asdict') else _namedtuple_to_dict(v)
+        for k, v in o._asdict().items()
+    }
 
 
 def create_from_json(s: Union[str, Path]):
