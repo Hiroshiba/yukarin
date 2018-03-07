@@ -58,12 +58,12 @@ def generate_feature(path: Path):
     )
 
     if arguments.threshold_db is not None:
-        index = wave.get_effective_frame(
+        effective = wave.get_effective_frame(
             threshold_db=arguments.threshold_db,
             fft_length=arguments.fft_length,
             frame_period=arguments.frame_period,
         )
-        feature = feature.indexing(index)
+        feature = feature.indexing(effective)
 
     # save
     feature.save(path=out, validate=True, ignores=arguments.ignore_feature)

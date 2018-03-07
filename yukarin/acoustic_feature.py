@@ -1,11 +1,13 @@
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Dict
 
 import numpy
 import pysptk
 import pyworld
 
 from .wave import Wave
+
+_min_mc = -18.3
 
 
 class AcousticFeature(object):
@@ -24,6 +26,17 @@ class AcousticFeature(object):
         self.coded_ap = coded_ap
         self.mc = mc
         self.voiced = voiced
+
+    @staticmethod
+    def dtypes():
+        return dict(
+            f0=numpy.float64,
+            sp=numpy.float64,
+            ap=numpy.float64,
+            coded_ap=numpy.float64,
+            mc=numpy.float64,
+            voiced=numpy.bool,
+        )
 
     def astype(self, dtype):
         return AcousticFeature(
@@ -56,6 +69,21 @@ class AcousticFeature(object):
             mc=self.mc[index] if is_target(self.mc) else numpy.nan,
             voiced=self.voiced[index] if is_target(self.voiced) else numpy.nan,
         )
+
+    def indexing_set(self, index: numpy.ndarray, feature: 'AcousticFeature'):
+        is_target = lambda a: not numpy.any(numpy.isnan(a))
+        if is_target(self.f0):
+            self.f0[index] = feature.f0
+        if is_target(self.sp):
+            self.sp[index] = feature.sp
+        if is_target(self.ap):
+            self.ap[index] = feature.ap
+        if is_target(self.coded_ap):
+            self.coded_ap[index] = feature.coded_ap
+        if is_target(self.mc):
+            self.mc[index] = feature.mc
+        if is_target(self.voiced):
+            self.voiced[index] = feature.voiced
 
     def validate(self):
         assert self.f0.ndim == 2
@@ -118,6 +146,27 @@ class AcousticFeature(object):
         feature.validate()
         return feature
 
+    @staticmethod
+    def silent(length: int, sizes: Dict[str, int], keys=Tuple[str]):
+        d = {}
+        if 'f0' in keys:
+            d['f0'] = numpy.zeros((length, sizes['f0']), dtype=AcousticFeature.dtypes()['f0'])
+        if 'sp' in keys:
+            d['sp'] = numpy.zeros((length, sizes['sp']), dtype=AcousticFeature.dtypes()['sp'])
+        if 'ap' in keys:
+            d['ap'] = numpy.zeros((length, sizes['ap']), dtype=AcousticFeature.dtypes()['ap'])
+        if 'coded_ap' in keys:
+            d['coded_ap'] = numpy.zeros((length, sizes['coded_ap']), dtype=AcousticFeature.dtypes()['coded_ap'])
+        if 'mc' in keys:
+            d['mc'] = numpy.hstack((
+                numpy.ones((length, 1), dtype=AcousticFeature.dtypes()['mc']) * _min_mc,
+                numpy.zeros((length, sizes['mc'] - 1), dtype=AcousticFeature.dtypes()['mc'])
+            ))
+        if 'voiced' in keys:
+            d['voiced'] = numpy.zeros((length, sizes['voiced']), dtype=AcousticFeature.dtypes()['voiced'])
+        feature = AcousticFeature(**d)
+        return feature
+
     def decode(self, sampling_rate: int, frame_period: float):
         acoustic_feature = self.astype_only_float(numpy.float64)
         out = pyworld.synthesize(
@@ -125,7 +174,7 @@ class AcousticFeature(object):
             spectrogram=acoustic_feature.sp,
             aperiodicity=acoustic_feature.ap,
             fs=sampling_rate,
-            frame_period=frame_period
+            frame_period=frame_period,
         )
         return Wave(out, sampling_rate=sampling_rate)
 

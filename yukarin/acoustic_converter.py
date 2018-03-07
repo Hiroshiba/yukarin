@@ -55,6 +55,22 @@ class AcousticConverter(object):
             dtype=self._param.dtype,
         )
 
+    def separate_effective(self, wave: Wave, feature: AcousticFeature):
+        """
+        :return: (effective feature, effective flags)
+        """
+        hop, length = wave.get_hop_and_length(frame_period=self._param.frame_period)
+        if self._param.threshold_db is not None:
+            effective = wave.get_effective_frame(
+                threshold_db=self._param.threshold_db,
+                fft_length=self._param.fft_length,
+                frame_period=self._param.frame_period,
+            )
+            feature = feature.indexing(effective)
+        else:
+            effective = numpy.ones(length, dtype=bool)
+        return feature, effective
+
     def load_acoustic_feature(self, path: Path):
         return AcousticFeature.load(path)
 
@@ -78,17 +94,30 @@ class AcousticConverter(object):
         out.ap = in_feature.ap
         out.voiced = in_feature.voiced
         out.f0[~out.voiced] = 0
+        return out
 
+    @staticmethod
+    def filter_f0(f0: numpy.ndarray, filter_size: int):
+        import scipy.ndimage
+        return scipy.ndimage.median_filter(f0, size=(filter_size, 1))
+
+    def combine_silent(self, effective: numpy.ndarray, feature: AcousticFeature):
+        sizes = AcousticFeature.get_sizes(
+            sampling_rate=self._param.sampling_rate,
+            order=self._param.order,
+        )
+        silent_feature = AcousticFeature.silent(len(effective), sizes=sizes, keys=('mc', 'ap', 'f0', 'voiced'))
+        silent_feature.indexing_set(effective, feature)
+        return silent_feature
+
+    def decode_spectrogram(self, feature: AcousticFeature):
         fftlen = pyworld.get_cheaptrick_fft_size(self.out_sampling_rate)
-        sp = pysptk.mc2sp(
-            out.mc,
+        feature.sp = pysptk.mc2sp(
+            feature.mc.astype(numpy.float32),
             alpha=self._param.alpha,
             fftlen=fftlen,
         )
-        out.sp = sp
-
-        out = out.astype_only_float(numpy.float64)
-        return out
+        return feature
 
     def decode_acoustic_feature(self, feature: AcousticFeature):
         out = pyworld.synthesize(
