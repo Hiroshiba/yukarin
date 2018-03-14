@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
 
 import numpy
 import pysptk
@@ -177,6 +177,21 @@ class AcousticFeature(object):
             frame_period=frame_period,
         )
         return Wave(out, sampling_rate=sampling_rate)
+
+    @staticmethod
+    def concatenate(fs: List['AcousticFeature'], keys: List[str]):
+        is_target = lambda a: not numpy.any(numpy.isnan(a))
+        return AcousticFeature(**{
+            key: numpy.concatenate([getattr(f, key) for f in fs]) if is_target(getattr(fs[0], key)) else numpy.nan
+            for key in keys
+        })
+
+    def pick(self, first: int, last: int, keys: List[str]):
+        is_target = lambda a: not numpy.any(numpy.isnan(a))
+        return AcousticFeature(**{
+            key: getattr(self, key)[first:last] if is_target(getattr(self, key)) else numpy.nan
+            for key in keys
+        })
 
     def save(self, path: Path, validate=False, ignores: Tuple[str] = None):
         if validate:
