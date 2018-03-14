@@ -1,9 +1,13 @@
 import argparse
+from copy import copy
 from functools import partial
 from pathlib import Path
+from typing import Any
+from typing import Dict
 
 from chainer import cuda
 from chainer import optimizers
+from chainer import serializers
 from chainer import training
 from chainer.dataset import convert
 from chainer.iterators import MultiprocessIterator
@@ -14,6 +18,7 @@ from yukarin.config import create_from_json
 from yukarin.dataset import create as create_dataset
 from yukarin.model import create
 from yukarin.updater import Updater
+from yukarin.utility.chainer_utility import TensorBoardReport
 
 parser = argparse.ArgumentParser()
 parser.add_argument('config_json_path', type=Path)
@@ -33,6 +38,9 @@ models = {
     'discriminator': discriminator,
 }
 
+if config.train.pretrained_model is not None:
+    serializers.load_npz(str(config.train.pretrained_model), predictor)
+
 # dataset
 dataset = create_dataset(config.dataset)
 train_iter = MultiprocessIterator(dataset['train'], config.train.batchsize)
@@ -42,7 +50,16 @@ train_eval_iter = MultiprocessIterator(dataset['train_eval'], config.train.batch
 
 # optimizer
 def create_optimizer(model):
-    optimizer = optimizers.Adam(alpha=0.0002, beta1=0.5, beta2=0.999)
+    cp: Dict[str, Any] = copy(config.train.optimizer)
+    n = cp.pop('name').lower()
+
+    if n == 'adam':
+        optimizer = optimizers.Adam(**cp)
+    elif n == 'sgd':
+        optimizer = optimizers.SGD(**cp)
+    else:
+        raise ValueError(n)
+
     optimizer.setup(model)
     return optimizer
 
@@ -64,8 +81,9 @@ updater = Updater(
 # trainer
 trigger_log = (config.train.log_iteration, 'iteration')
 trigger_snapshot = (config.train.snapshot_iteration, 'iteration')
+trigger_stop = (config.train.stop_iteration, 'iteration') if config.train.stop_iteration is not None else None
 
-trainer = training.Trainer(updater, out=arguments.output)
+trainer = training.Trainer(updater, stop_trigger=trigger_stop, out=arguments.output)
 
 ext = extensions.Evaluator(test_iter, models, converter, device=config.train.gpu, eval_func=updater.forward)
 trainer.extend(ext, name='test', trigger=trigger_log)
@@ -78,6 +96,10 @@ ext = extensions.snapshot_object(predictor, filename='predictor_{.updater.iterat
 trainer.extend(ext, trigger=trigger_snapshot)
 
 trainer.extend(extensions.LogReport(trigger=trigger_log))
+trainer.extend(TensorBoardReport(), trigger=trigger_log)
+
+if trigger_stop is not None:
+    trainer.extend(extensions.ProgressBar(trigger_stop))
 
 save_args(arguments, arguments.output)
 trainer.run()

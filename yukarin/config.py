@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Any
 from typing import List
 from typing import NamedTuple
 from typing import Union
@@ -44,6 +44,9 @@ class TrainConfig(NamedTuple):
     gpu: int
     log_iteration: int
     snapshot_iteration: int
+    stop_iteration: int
+    optimizer: Dict[str, Any]
+    pretrained_model: Path
 
 
 class ProjectConfig(NamedTuple):
@@ -107,6 +110,9 @@ def create_from_json(s: Union[str, Path]):
             gpu=d['train']['gpu'],
             log_iteration=d['train']['log_iteration'],
             snapshot_iteration=d['train']['snapshot_iteration'],
+            stop_iteration=d['train']['stop_iteration'],
+            optimizer=d['train']['optimizer'],
+            pretrained_model=d['train']['pretrained_model'],
         ),
         project=ProjectConfig(
             name=d['project']['name'],
@@ -116,4 +122,13 @@ def create_from_json(s: Union[str, Path]):
 
 
 def backward_compatible(d: Dict):
-    pass
+    if 'optimizer' not in d['train']:
+        d['train']['optimizer'] = dict(
+            name='Adam',
+            alpha=0.0002,
+            beta1=0.5,
+            beta2=0.999,
+        )
+
+    if 'pretrained_model' not in d['train']:
+        d['train']['pretrained_model'] = None
