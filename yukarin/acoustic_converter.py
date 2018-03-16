@@ -94,8 +94,9 @@ class AcousticConverter(object):
         out.ap = in_feature.ap
         out.voiced = in_feature.voiced
 
-        if not numpy.isnan(out.f0):
-            out.f0[~out.voiced] = 0
+        if numpy.any(numpy.isnan(out.f0)):
+            out.f0 = in_feature.f0
+        out.f0[~out.voiced] = 0
         return out
 
     @staticmethod
