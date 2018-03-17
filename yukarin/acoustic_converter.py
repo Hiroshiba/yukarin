@@ -10,18 +10,27 @@ from yukarin.acoustic_feature import AcousticFeature
 from yukarin.config import Config
 from yukarin.dataset import decode_feature
 from yukarin.dataset import encode_feature
+from yukarin.f0_converter import F0Converter
 from yukarin.model import create_predictor
 from yukarin.wave import Wave
 
 
 class AcousticConverter(object):
-    def __init__(self, config: Config, model_path: Path, gpu: int = None, out_sampling_rate: int = None) -> None:
+    def __init__(
+            self,
+            config: Config,
+            model_path: Path,
+            gpu: int = None,
+            f0_converter: F0Converter = None,
+            out_sampling_rate: int = None,
+    ) -> None:
         if out_sampling_rate is None:
             out_sampling_rate = config.dataset.acoustic_param.sampling_rate
 
         self.config = config
         self.model_path = model_path
         self.gpu = gpu
+        self.f0_converter = f0_converter
         self.out_sampling_rate = out_sampling_rate
         self._param = self.config.dataset.acoustic_param
 
@@ -95,7 +104,11 @@ class AcousticConverter(object):
         out.voiced = in_feature.voiced
 
         if numpy.any(numpy.isnan(out.f0)):
-            out.f0 = in_feature.f0
+            if self.f0_converter is not None:
+                out.f0 = self.f0_converter.convert(in_feature.f0)
+            else:
+                out.f0 = in_feature.f0
+
         out.f0[~out.voiced] = 0
         return out
 

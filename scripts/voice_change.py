@@ -14,6 +14,7 @@ from become_yukarin.data_struct import AcousticFeature as BYAcousticFeature
 
 from yukarin import AcousticConverter
 from yukarin.config import create_from_json as create_config
+from yukarin.f0_converter import F0Converter
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--voice_changer_model_dir', '-vcmd', type=Path)
@@ -22,6 +23,8 @@ parser.add_argument('--voice_changer_config', '-vcc', type=Path)
 parser.add_argument('--filter_size', '-fs', type=int)
 parser.add_argument('--super_resolution_model', '-srm', type=Path)
 parser.add_argument('--super_resolution_config', '-src', type=Path)
+parser.add_argument('--input_statistics', '-is', type=Path)
+parser.add_argument('--target_statistics', '-ts', type=Path)
 parser.add_argument('--output_dir', '-o', type=Path, default='./output/')
 parser.add_argument('--dataset_input_wave_dir', '-diwd', type=Path)
 parser.add_argument('--dataset_target_wave_dir', '-dtwd', type=Path)
@@ -35,6 +38,8 @@ voice_changer_config: Path = arguments.voice_changer_config
 filter_size: int = arguments.filter_size
 super_resolution_model: Path = arguments.super_resolution_model
 super_resolution_config: Path = arguments.super_resolution_config
+input_statistics: Path = arguments.input_statistics
+target_statistics: Path = arguments.target_statistics
 output_dir: Path = arguments.output_dir
 dataset_input_wave_dir: Path = arguments.dataset_input_wave_dir
 dataset_target_wave_dir: Path = arguments.dataset_target_wave_dir
@@ -121,9 +126,17 @@ def main():
         voice_changer_model = voice_changer_model_dir / 'predictor_{}.npz'.format(
             arguments.voice_changer_model_iteration)
 
-    config = create_config(arguments.voice_changer_config)
-    acoustic_converter = AcousticConverter(config, voice_changer_model, gpu=arguments.gpu)
+    # f0 converter
+    if input_statistics is not None:
+        f0_converter = F0Converter(input_statistics=input_statistics, target_statistics=target_statistics)
+    else:
+        f0_converter = None
 
+    # acoustic converter
+    config = create_config(arguments.voice_changer_config)
+    acoustic_converter = AcousticConverter(config, voice_changer_model, gpu=arguments.gpu, f0_converter=f0_converter)
+
+    # super resolution
     sr_config = create_sr_config(arguments.super_resolution_config)
     super_resolution = SuperResolution(sr_config, super_resolution_model, gpu=arguments.gpu)
 
