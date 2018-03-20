@@ -41,7 +41,7 @@ def generate_align_indexes(pair_path: Tuple[Path, Path]):
     align_indexes = AlignIndexes.extract(feature1, feature2, dtype=arguments.dtype)
 
     # save
-    align_indexes.save(path=out, validate=True, ignores=arguments.ignore_feature)
+    align_indexes.save(path=out, ignores=arguments.ignore_feature)
 
 
 def main():

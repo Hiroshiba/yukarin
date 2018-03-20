@@ -92,7 +92,7 @@ class Dataset(chainer.dataset.DatasetMixin):
         inputs = self.inputs[i]
         p_input, p_target, p_indexes = inputs.in_feature_path, inputs.out_feature_path, inputs.indexes_path
 
-        indexes = AlignIndexes.load(p_indexes, validate=True)
+        indexes = AlignIndexes.load(p_indexes)
 
         # input feature
         f_in = AcousticFeature.load(p_input)

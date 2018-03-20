@@ -20,11 +20,6 @@ class AlignIndexes(object):
         self.indexes1 = indexes1
         self.indexes2 = indexes2
 
-    def validate(self):
-        assert numpy.all(self.indexes1 == numpy.int64(self.indexes1))
-        assert numpy.all(self.indexes2 == numpy.int64(self.indexes2))
-        assert len(self.indexes1) == len(self.indexes2)
-
     def get_aligned_feature1(self):
         return self.feature1.indexing(self.indexes1)
 
@@ -43,18 +38,13 @@ class AlignIndexes(object):
             indexes1=indexes1,
             indexes2=indexes2,
         )
-        align_indexes.validate()
         return align_indexes
 
     def save(
             self,
             path: Path,
-            validate=False,
             ignores: Tuple[str, ...] = ('feature1', 'feature2'),
     ):
-        if validate:
-            self.validate()
-
         d = dict(
             feature1=self.feature1,
             feature2=self.feature2,
@@ -68,7 +58,7 @@ class AlignIndexes(object):
         numpy.save(path, d)
 
     @staticmethod
-    def load(path: Path, validate=False):
+    def load(path: Path):
         d = numpy.load(path).item()  # type: dict
         feature = AlignIndexes(
             feature1=d['feature1'],
@@ -76,6 +66,4 @@ class AlignIndexes(object):
             indexes1=d['indexes1'],
             indexes2=d['indexes2'],
         )
-        if validate:
-            feature.validate()
         return feature

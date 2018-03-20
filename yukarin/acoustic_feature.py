@@ -85,23 +85,6 @@ class AcousticFeature(object):
         if is_target(self.voiced):
             self.voiced[index] = feature.voiced
 
-    def validate(self):
-        assert self.f0.ndim == 2
-        assert self.sp.ndim == 2
-        assert self.ap.ndim == 2
-        assert self.coded_ap.ndim == 2
-        assert self.mc.ndim == 2
-        assert self.voiced.ndim == 2
-
-        len_time = len(self.f0)
-        assert len(self.sp) == len_time
-        assert len(self.ap) == len_time
-        assert len(self.coded_ap) == len_time
-        assert len(self.mc) == len_time
-        assert len(self.voiced) == len_time
-
-        assert self.voiced.dtype == numpy.bool
-
     @staticmethod
     def get_sizes(sampling_rate: int, order: int):
         fft_size = pyworld.get_cheaptrick_fft_size(fs=sampling_rate)
@@ -143,7 +126,6 @@ class AcousticFeature(object):
             voiced=voiced[:, None],
         )
         feature = feature.astype_only_float(dtype)
-        feature.validate()
         return feature
 
     @staticmethod
@@ -193,10 +175,7 @@ class AcousticFeature(object):
             for key in keys
         })
 
-    def save(self, path: Path, validate=False, ignores: Tuple[str] = None):
-        if validate:
-            self.validate()
-
+    def save(self, path: Path, ignores: Tuple[str] = None):
         d = dict(
             f0=self.f0,
             sp=self.sp,
@@ -212,7 +191,7 @@ class AcousticFeature(object):
         numpy.save(path, d)
 
     @staticmethod
-    def load(path: Path, validate=False):
+    def load(path: Path):
         d: Dict = numpy.load(path).item()
         feature = AcousticFeature(
             f0=d['f0'],
@@ -222,8 +201,6 @@ class AcousticFeature(object):
             mc=d['mc'],
             voiced=d['voiced'],
         )
-        if validate:
-            feature.validate()
         return feature
 
     @staticmethod

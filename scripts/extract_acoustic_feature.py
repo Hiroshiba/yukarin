@@ -66,7 +66,7 @@ def generate_feature(path: Path):
         feature = feature.indexing(effective)
 
     # save
-    feature.save(path=out, validate=True, ignores=arguments.ignore_feature)
+    feature.save(path=out, ignores=arguments.ignore_feature)
 
 
 def main():

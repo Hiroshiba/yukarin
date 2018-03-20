@@ -126,7 +126,7 @@ def generate_align_indexes(pair_path: Tuple[Path, Path]):
     feature1 = AcousticFeature(mc=mcep1)
     feature2 = AcousticFeature(mc=mcep2)
     align_indexes = AlignIndexes.extract(feature1, feature2, dtype=arguments.dtype)
-    align_indexes.save(path=out, validate=True, ignores=arguments.ignore_feature)
+    align_indexes.save(path=out, ignores=arguments.ignore_feature)
 
 
 def main():
