@@ -75,12 +75,11 @@ def main():
     arguments.output.mkdir(exist_ok=True)
     save_arguments(arguments, arguments.output / 'arguments.json')
 
-    path_feature1 = [Path(p) for p in sorted(glob.glob(arguments.input_feature_glob1))]
-    path_feature2 = [Path(p) for p in sorted(glob.glob(arguments.input_feature_glob2))]
-    assert len(path_feature1) == len(path_feature2)
+    path_feature1 = {Path(p).stem: Path(p) for p in glob.glob(arguments.input_feature_glob1)}
+    path_feature2 = {Path(p).stem: Path(p) for p in glob.glob(arguments.input_feature_glob2)}
 
-    path_indexes = [Path(p) for p in sorted(glob.glob(arguments.input_indexes))]
-    assert len(path_feature1) == len(path_indexes)
+    path_indexes = {Path(p).stem: Path(p) for p in glob.glob(arguments.input_indexes)}
+    fn_both_list = set(path_feature1.keys()) & set(path_indexes.keys())
 
     pool = multiprocessing.Pool()
     generate = partial(
@@ -89,7 +88,7 @@ def main():
         frame_period=arguments.frame_period,
         alpha=arguments.alpha,
     )
-    it = pool.imap(generate, zip(path_feature1, path_feature2, path_indexes))
+    it = pool.imap(generate, ((path_feature1[fn], path_feature2[fn], path_indexes[fn]) for fn in fn_both_list))
     list(tqdm.tqdm(it, total=len(path_feature1)))
 
 

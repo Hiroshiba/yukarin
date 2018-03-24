@@ -130,19 +130,22 @@ class Dataset(chainer.dataset.DatasetMixin):
 
 
 def create(config: DatasetConfig):
-    input_paths = list(sorted([Path(p) for p in glob.glob(str(config.input_glob))]))
-    target_paths = list(sorted([Path(p) for p in glob.glob(str(config.target_glob))]))
-    indexes_paths = list(sorted([Path(p) for p in glob.glob(str(config.indexes_glob))]))
-    assert len(input_paths) == len(target_paths) == len(indexes_paths)
+    input_paths = {Path(p).stem: Path(p) for p in glob.glob(str(config.input_glob))}
+    target_paths = {Path(p).stem: Path(p) for p in glob.glob(str(config.target_glob))}
+    indexes_paths = {Path(p).stem: Path(p) for p in glob.glob(str(config.indexes_glob))}
+    assert set(indexes_paths.keys()).issubset(set(input_paths.keys()))
+    assert set(indexes_paths.keys()).issubset(set(target_paths.keys()))
+
+    fn_list = sorted(indexes_paths.keys())
 
     num_test = config.num_test
     pairs = [
         Inputs(
-            in_feature_path=input_path,
-            out_feature_path=target_path,
-            indexes_path=indexes_path,
+            in_feature_path=input_paths[fn],
+            out_feature_path=target_paths[fn],
+            indexes_path=indexes_paths[fn],
         )
-        for input_path, target_path, indexes_path in zip(input_paths, target_paths, indexes_paths)
+        for fn in fn_list
     ]
     numpy.random.RandomState(config.seed).shuffle(pairs)
     train_paths = pairs[num_test:]

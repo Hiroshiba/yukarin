@@ -53,4 +53,6 @@ for i_loop in $(seq 1 ${LOOP}); do
         -i2 "${TARGET_GLOB}" \
         -o ${OUTPUT_ALIGNMENT} \
 
+    # remove
+    rm -r ${OUTPUT_CONVERTED}
 done

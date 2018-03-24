@@ -9,6 +9,8 @@ from .wave import Wave
 
 _min_mc = -18.3
 
+_is_target = lambda a: isinstance(a, numpy.ndarray)  # numpy.nan is not target
+
 
 class AcousticFeature(object):
     def __init__(
@@ -49,40 +51,37 @@ class AcousticFeature(object):
         )
 
     def astype_only_float(self, dtype):
-        is_target = lambda a: not numpy.any(numpy.isnan(a))
         return AcousticFeature(
-            f0=self.f0.astype(dtype) if is_target(self.f0) else numpy.nan,
-            sp=self.sp.astype(dtype) if is_target(self.sp) else numpy.nan,
-            ap=self.ap.astype(dtype) if is_target(self.ap) else numpy.nan,
-            coded_ap=self.coded_ap.astype(dtype) if is_target(self.coded_ap) else numpy.nan,
-            mc=self.mc.astype(dtype) if is_target(self.mc) else numpy.nan,
+            f0=self.f0.astype(dtype) if _is_target(self.f0) else numpy.nan,
+            sp=self.sp.astype(dtype) if _is_target(self.sp) else numpy.nan,
+            ap=self.ap.astype(dtype) if _is_target(self.ap) else numpy.nan,
+            coded_ap=self.coded_ap.astype(dtype) if _is_target(self.coded_ap) else numpy.nan,
+            mc=self.mc.astype(dtype) if _is_target(self.mc) else numpy.nan,
             voiced=self.voiced,
         )
 
     def indexing(self, index: numpy.ndarray):
-        is_target = lambda a: not numpy.any(numpy.isnan(a))
         return AcousticFeature(
-            f0=self.f0[index] if is_target(self.f0) else numpy.nan,
-            sp=self.sp[index] if is_target(self.sp) else numpy.nan,
-            ap=self.ap[index] if is_target(self.ap) else numpy.nan,
-            coded_ap=self.coded_ap[index] if is_target(self.coded_ap) else numpy.nan,
-            mc=self.mc[index] if is_target(self.mc) else numpy.nan,
-            voiced=self.voiced[index] if is_target(self.voiced) else numpy.nan,
+            f0=self.f0[index] if _is_target(self.f0) else numpy.nan,
+            sp=self.sp[index] if _is_target(self.sp) else numpy.nan,
+            ap=self.ap[index] if _is_target(self.ap) else numpy.nan,
+            coded_ap=self.coded_ap[index] if _is_target(self.coded_ap) else numpy.nan,
+            mc=self.mc[index] if _is_target(self.mc) else numpy.nan,
+            voiced=self.voiced[index] if _is_target(self.voiced) else numpy.nan,
         )
 
     def indexing_set(self, index: numpy.ndarray, feature: 'AcousticFeature'):
-        is_target = lambda a: not numpy.any(numpy.isnan(a))
-        if is_target(self.f0):
+        if _is_target(self.f0):
             self.f0[index] = feature.f0
-        if is_target(self.sp):
+        if _is_target(self.sp):
             self.sp[index] = feature.sp
-        if is_target(self.ap):
+        if _is_target(self.ap):
             self.ap[index] = feature.ap
-        if is_target(self.coded_ap):
+        if _is_target(self.coded_ap):
             self.coded_ap[index] = feature.coded_ap
-        if is_target(self.mc):
+        if _is_target(self.mc):
             self.mc[index] = feature.mc
-        if is_target(self.voiced):
+        if _is_target(self.voiced):
             self.voiced[index] = feature.voiced
 
     @staticmethod
@@ -162,16 +161,14 @@ class AcousticFeature(object):
 
     @staticmethod
     def concatenate(fs: List['AcousticFeature'], keys: List[str]):
-        is_target = lambda a: not numpy.any(numpy.isnan(a))
         return AcousticFeature(**{
-            key: numpy.concatenate([getattr(f, key) for f in fs]) if is_target(getattr(fs[0], key)) else numpy.nan
+            key: numpy.concatenate([getattr(f, key) for f in fs]) if _is_target(getattr(fs[0], key)) else numpy.nan
             for key in keys
         })
 
     def pick(self, first: int, last: int, keys: List[str]):
-        is_target = lambda a: not numpy.any(numpy.isnan(a))
         return AcousticFeature(**{
-            key: getattr(self, key)[first:last] if is_target(getattr(self, key)) else numpy.nan
+            key: getattr(self, key)[first:last] if _is_target(getattr(self, key)) else numpy.nan
             for key in keys
         })
 
