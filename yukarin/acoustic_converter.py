@@ -2,6 +2,7 @@ from functools import partial
 from pathlib import Path
 
 import chainer
+import librosa
 import numpy
 import pysptk
 import pyworld
@@ -64,20 +65,29 @@ class AcousticConverter(object):
             dtype=self._param.dtype,
         )
 
-    def separate_effective(self, wave: Wave, feature: AcousticFeature):
+    def separate_effective(self, wave: Wave, feature: AcousticFeature, threshold=None):
         """
         :return: (effective feature, effective flags)
         """
         hop, length = wave.get_hop_and_length(frame_period=self._param.frame_period)
-        if self._param.threshold_db is not None:
-            effective = wave.get_effective_frame(
-                threshold_db=self._param.threshold_db,
-                fft_length=self._param.fft_length,
-                frame_period=self._param.frame_period,
-            )
-            feature = feature.indexing(effective)
+        if threshold is None:
+            if self._param.threshold_db is not None:
+                effective = wave.get_effective_frame(
+                    threshold_db=self._param.threshold_db,
+                    fft_length=self._param.fft_length,
+                    frame_period=self._param.frame_period,
+                )
+                feature = feature.indexing(effective)
+            else:
+                effective = numpy.ones(length, dtype=bool)
         else:
-            effective = numpy.ones(length, dtype=bool)
+            mse = librosa.feature.rmse(y=wave.wave, frame_length=self._param.fft_length, hop_length=hop) ** 2
+            effective = (librosa.core.power_to_db(mse.squeeze()) > - threshold)
+            if len(effective) < len(feature.f0):  # the divide move
+                effective = numpy.r_[effective, False]
+            if len(effective) > len(feature.f0):  # the divide move
+                effective = effective
+            feature = feature.indexing(effective)
         return feature, effective
 
     def load_acoustic_feature(self, path: Path):
