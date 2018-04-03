@@ -154,13 +154,15 @@ class Discriminator(chainer.Chain):
             else:
                 self.c4 = Convolution1D(base * 16, 1, 1, 1, 0, initialW=w)
 
-    def __call__(self, x_0, x_1):
-        h = F.concat([self.c0_0(x_0), self.c0_1(x_1)])
+    def __call__(self, x_0, x_1=None):
+        if x_1 is not None:
+            h = F.concat([self.c0_0(x_0), self.c0_1(x_1)])
+        else:
+            h = F.concat([self.c0_0(x_0), self.c0_1(x_0)])
         h = self.c1(h)
         h = self.c2(h)
         h = self.c3(h)
         h = self.c4(h)
-        # h = F.average_pooling_2d(h, h.data.shape[2], 1, 0)
         return h
 
 

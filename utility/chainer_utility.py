@@ -5,12 +5,12 @@ from tb_chainer import SummaryWriter
 
 
 class TensorBoardReport(chainer.training.Extension):
-    def __init__(self):
-        self.writer = None
+    def __init__(self, writer=None):
+        self.writer = writer
 
     def __call__(self, trainer: chainer.training.Trainer):
         if self.writer is None:
-            self.writer = SummaryWriter(Path(trainer.out) / Path(trainer.out).name)
+            self.writer = SummaryWriter(Path(trainer.out))
 
         observations = trainer.observation
         n_iter = trainer.updater.iteration

@@ -119,13 +119,67 @@ class Dataset(chainer.dataset.DatasetMixin):
         mask = random_crop(mask, seed=seed, crop_size=self.config.train_crop_size)
 
         if train:
-            input = add_noise(input, p_global=self.config.target_global_noise, p_local=self.config.target_local_noise)
+            input = add_noise(input, p_global=self.config.input_global_noise, p_local=self.config.input_local_noise)
             target = add_noise(target, p_global=self.config.target_global_noise, p_local=self.config.target_local_noise)
 
         return dict(
             input=input,
             target=target,
             mask=mask,
+        )
+
+
+class CGDataset(chainer.dataset.DatasetMixin):
+    def __init__(self, x_paths: List[Path], y_paths: List[Path], config: DatasetConfig) -> None:
+        self.x_paths = x_paths
+        self.y_paths = y_paths
+        self.config = config
+
+    def __len__(self):
+        return min(len(self.x_paths), len(self.y_paths))
+
+    def get_example(self, i):
+        train = chainer.config.train
+
+        p_x = self.x_paths[numpy.random.randint(len(self.x_paths))]
+        p_y = self.y_paths[numpy.random.randint(len(self.y_paths))]
+
+        f_x = AcousticFeature.load(p_x)
+        x = encode_feature(f_x, targets=self.config.features)
+
+        f_y = AcousticFeature.load(p_y)
+        y = encode_feature(f_y, targets=self.config.features)
+
+        mask_x = encode_feature(make_mask(f_x), targets=self.config.features)
+        mask_y = encode_feature(make_mask(f_y), targets=self.config.features)
+
+        # padding
+        seed = numpy.random.randint(2 ** 32)
+        x = random_pad(x, seed=seed, min_size=self.config.train_crop_size)
+        mask_x = random_pad(mask_x, seed=seed, min_size=self.config.train_crop_size)
+
+        seed = numpy.random.randint(2 ** 32)
+        y = random_pad(y, seed=seed, min_size=self.config.train_crop_size)
+        mask_y = random_pad(mask_y, seed=seed, min_size=self.config.train_crop_size)
+
+        # crop
+        seed = numpy.random.randint(2 ** 32)
+        x = random_crop(x, seed=seed, crop_size=self.config.train_crop_size)
+        mask_x = random_crop(mask_x, seed=seed, crop_size=self.config.train_crop_size)
+
+        seed = numpy.random.randint(2 ** 32)
+        y = random_crop(y, seed=seed, crop_size=self.config.train_crop_size)
+        mask_y = random_crop(mask_y, seed=seed, crop_size=self.config.train_crop_size)
+
+        if train:
+            x = add_noise(x, p_global=self.config.input_global_noise, p_local=self.config.input_local_noise)
+            y = add_noise(y, p_global=self.config.target_global_noise, p_local=self.config.target_local_noise)
+
+        return dict(
+            x=x,
+            y=y,
+            mask_x=mask_x,
+            mask_y=mask_y,
         )
 
 
@@ -156,4 +210,27 @@ def create(config: DatasetConfig):
         'train': Dataset(train_paths, config=config),
         'test': Dataset(test_paths, config=config),
         'train_eval': Dataset(train_for_evaluate_paths, config=config),
+    }
+
+
+def create_cg(config: DatasetConfig):
+    x_paths = [Path(p) for p in glob.glob(str(config.input_glob))]
+    y_paths = [Path(p) for p in glob.glob(str(config.target_glob))]
+
+    num_test = config.num_test
+    numpy.random.RandomState(config.seed).shuffle(x_paths)
+    numpy.random.RandomState(config.seed).shuffle(y_paths)
+
+    train_x_paths = x_paths[num_test:]
+    test_x_paths = x_paths[:num_test]
+    train_for_evaluate_x_paths = x_paths[:num_test]
+
+    train_y_paths = y_paths[num_test:]
+    test_y_paths = y_paths[:num_test]
+    train_for_evaluate_y_paths = y_paths[:num_test]
+
+    return {
+        'train': CGDataset(train_x_paths, train_y_paths, config=config),
+        'test': CGDataset(test_x_paths, test_y_paths, config=config),
+        'train_eval': CGDataset(train_for_evaluate_x_paths, train_for_evaluate_y_paths, config=config),
     }
