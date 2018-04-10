@@ -15,11 +15,14 @@ from become_yukarin.data_struct import AcousticFeature as BYAcousticFeature
 from yukarin import AcousticConverter
 from yukarin.config import create_from_json as create_config
 from yukarin.f0_converter import F0Converter
+from yukarin.utility.json_utility import save_arguments
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--voice_changer_model_dir', '-vcmd', type=Path)
 parser.add_argument('--voice_changer_model_iteration', '-vcmi', type=int)
 parser.add_argument('--voice_changer_config', '-vcc', type=Path)
+parser.add_argument('--input_wave_scale', '-iws', type=float)
+parser.add_argument('--out_sampling_rate', '-osr', type=int)
 parser.add_argument('--filter_size', '-fs', type=int)
 parser.add_argument('--super_resolution_model', '-srm', type=Path)
 parser.add_argument('--super_resolution_config', '-src', type=Path)
@@ -62,6 +65,7 @@ def process(p_in: Path, acoustic_converter: AcousticConverter, super_resolution:
         p_in = Path(glob.glob(str(dataset_input_wave_dir / p_in.stem) + '.*')[0])
 
     w_in = acoustic_converter.load_wave(p_in)
+    w_in.wave *= arguments.input_wave_scale
     f_in = acoustic_converter.extract_acoustic_feature(w_in)
     f_in_effective, effective = acoustic_converter.separate_effective(wave=w_in, feature=f_in)
     f_low = acoustic_converter.convert(f_in_effective)
@@ -119,6 +123,8 @@ def process(p_in: Path, acoustic_converter: AcousticConverter, super_resolution:
 
 
 def main():
+    save_arguments(arguments, output / 'arguments.json')
+
     if arguments.voice_changer_model_iteration is None:
         paths = voice_changer_model_dir.glob('predictor_*.npz')
         voice_changer_model = list(sorted(paths, key=_extract_number))[-1]
@@ -134,7 +140,13 @@ def main():
 
     # acoustic converter
     config = create_config(arguments.voice_changer_config)
-    acoustic_converter = AcousticConverter(config, voice_changer_model, gpu=arguments.gpu, f0_converter=f0_converter)
+    acoustic_converter = AcousticConverter(
+        config,
+        voice_changer_model,
+        gpu=arguments.gpu,
+        f0_converter=f0_converter,
+        out_sampling_rate=arguments.out_sampling_rate,
+    )
 
     # super resolution
     sr_config = create_sr_config(arguments.super_resolution_config)

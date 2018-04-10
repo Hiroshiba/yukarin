@@ -26,8 +26,8 @@ class Wave(object):
         )
 
     def get_hop_and_length(self, frame_period: float):
-        hop = self.sampling_rate * frame_period // 1000
-        length = int(numpy.ceil(len(self.wave) / hop + 0.0001))  # add micro value for WORLD
+        hop = round(self.sampling_rate * frame_period // 1000)
+        length = int(len(self.wave) / hop) + 1
         return hop, length
 
     def get_effective_frame(self, threshold_db: float, fft_length: int, frame_period: float):

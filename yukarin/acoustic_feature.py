@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Tuple, Dict, List
+from typing import Tuple, Dict, List, Iterable
 
 import numpy
 import pysptk
@@ -13,6 +13,8 @@ _is_target = lambda a: isinstance(a, numpy.ndarray)  # numpy.nan is not target
 
 
 class AcousticFeature(object):
+    all_keys = ('f0', 'sp', 'ap', 'coded_ap', 'mc', 'voiced')
+
     def __init__(
             self,
             f0: numpy.ndarray = numpy.nan,
@@ -128,7 +130,7 @@ class AcousticFeature(object):
         return feature
 
     @staticmethod
-    def silent(length: int, sizes: Dict[str, int], keys=Tuple[str]):
+    def silent(length: int, sizes: Dict[str, int], keys: Iterable[str] = all_keys):
         d = {}
         if 'f0' in keys:
             d['f0'] = numpy.zeros((length, sizes['f0']), dtype=AcousticFeature.dtypes()['f0'])
@@ -160,19 +162,19 @@ class AcousticFeature(object):
         return Wave(out, sampling_rate=sampling_rate)
 
     @staticmethod
-    def concatenate(fs: List['AcousticFeature'], keys: List[str]):
+    def concatenate(fs: List['AcousticFeature'], keys: Iterable[str] = all_keys):
         return AcousticFeature(**{
             key: numpy.concatenate([getattr(f, key) for f in fs]) if _is_target(getattr(fs[0], key)) else numpy.nan
             for key in keys
         })
 
-    def pick(self, first: int, last: int, keys: List[str]):
+    def pick(self, first: int, last: int, keys: Iterable[str] = all_keys):
         return AcousticFeature(**{
             key: getattr(self, key)[first:last] if _is_target(getattr(self, key)) else numpy.nan
             for key in keys
         })
 
-    def save(self, path: Path, ignores: Tuple[str] = None):
+    def save(self, path: Path, ignores: Iterable[str] = None):
         d = dict(
             f0=self.f0,
             sp=self.sp,

@@ -140,7 +140,7 @@ class AcousticConverter(object):
         fftlen = pyworld.get_cheaptrick_fft_size(self.out_sampling_rate)
         feature.sp = pysptk.mc2sp(
             feature.mc.astype(numpy.float32),
-            alpha=self._param.alpha,
+            alpha=pysptk.util.mcepalpha(self.out_sampling_rate),
             fftlen=fftlen,
         )
         return feature

@@ -23,6 +23,7 @@ parser.add_argument('--output', '-o', type=Path)
 parser.add_argument('--sampling_rate', type=int, default=base_acoustic_param.sampling_rate)
 parser.add_argument('--pad_second', type=float, default=base_acoustic_param.pad_second)
 parser.add_argument('--threshold_db', type=float, default=base_acoustic_param.threshold_db)
+parser.add_argument('--sampling_rate_for_thresholding', type=int)
 parser.add_argument('--frame_period', type=float, default=base_acoustic_param.frame_period)
 parser.add_argument('--order', type=int, default=base_acoustic_param.order)
 parser.add_argument('--alpha', type=float, default=base_acoustic_param.alpha)
@@ -58,11 +59,25 @@ def generate_feature(path: Path):
     )
 
     if arguments.threshold_db is not None:
-        effective = wave.get_effective_frame(
+        if arguments.sampling_rate_for_thresholding is not None:
+            wave_ref = Wave.load(path=path, sampling_rate=arguments.sampling_rate_for_thresholding)
+            wave_ref = wave_ref.pad(pre_second=arguments.pad_second, post_second=arguments.pad_second)
+        else:
+            wave_ref = wave
+
+        effective = wave_ref.get_effective_frame(
             threshold_db=arguments.threshold_db,
             fft_length=arguments.fft_length,
             frame_period=arguments.frame_period,
         )
+
+        # there is possibility mismatch of length
+        # https://github.com/mmorise/World/blob/c41e580c24c8d360f322ba6e2092ad4785d2d5b9/src/harvest.cpp#L1220
+        len_wave = wave.get_hop_and_length(arguments.frame_period)[1]
+        len_wave_ref = wave_ref.get_hop_and_length(arguments.frame_period)[1]
+        if len_wave == len_wave_ref - 1:
+            effective = effective[:-1]
+
         feature = feature.indexing(effective)
 
     # save
