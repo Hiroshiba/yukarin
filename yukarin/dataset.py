@@ -97,14 +97,14 @@ class Dataset(chainer.dataset.DatasetMixin):
         # input feature
         f_in = AcousticFeature.load(p_input)
         f_in = f_in.indexing(indexes.indexes1)
-        input = encode_feature(f_in, targets=self.config.features)
+        input = encode_feature(f_in, targets=self.config.in_features)
 
         # target feature
         f_tar = AcousticFeature.load(p_target)
         f_tar = f_tar.indexing(indexes.indexes2)
-        target = encode_feature(f_tar, targets=self.config.features)
+        target = encode_feature(f_tar, targets=self.config.out_features)
 
-        mask = encode_feature(make_mask(f_tar), targets=self.config.features)
+        mask = encode_feature(make_mask(f_tar), targets=self.config.out_features)
 
         # padding
         seed = numpy.random.randint(2 ** 32)
@@ -145,13 +145,13 @@ class CGDataset(chainer.dataset.DatasetMixin):
         p_y = self.y_paths[numpy.random.randint(len(self.y_paths))]
 
         f_x = AcousticFeature.load(p_x)
-        x = encode_feature(f_x, targets=self.config.features)
+        x = encode_feature(f_x, targets=self.config.in_features)
 
         f_y = AcousticFeature.load(p_y)
-        y = encode_feature(f_y, targets=self.config.features)
+        y = encode_feature(f_y, targets=self.config.out_features)
 
-        mask_x = encode_feature(make_mask(f_x), targets=self.config.features)
-        mask_y = encode_feature(make_mask(f_y), targets=self.config.features)
+        mask_x = encode_feature(make_mask(f_x), targets=self.config.in_features)
+        mask_y = encode_feature(make_mask(f_y), targets=self.config.out_features)
 
         # padding
         seed = numpy.random.randint(2 ** 32)

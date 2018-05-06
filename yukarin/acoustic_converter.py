@@ -1,5 +1,7 @@
+import math
 from functools import partial
 from pathlib import Path
+from typing import List, Union
 
 import chainer
 import librosa
@@ -22,7 +24,7 @@ class AcousticConverter(object):
             config: Config,
             model_path: Path,
             gpu: int = None,
-            f0_converter: F0Converter = None,
+            f0_converter: Union[F0Converter, 'AcousticConverter'] = None,
             out_sampling_rate: int = None,
     ) -> None:
         if out_sampling_rate is None:
@@ -41,14 +43,14 @@ class AcousticConverter(object):
             model.to_gpu(self.gpu)
 
     def _encode_feature(self, data):
-        return encode_feature(data, targets=self.config.dataset.features)
+        return encode_feature(data, targets=self.config.dataset.in_features)
 
     def _decode_feature(self, data):
         sizes = AcousticFeature.get_sizes(
             sampling_rate=self._param.sampling_rate,
             order=self._param.order,
         )
-        return decode_feature(data, targets=self.config.dataset.features, sizes=sizes)
+        return decode_feature(data, targets=self.config.dataset.out_features, sizes=sizes)
 
     def load_wave(self, path: Path):
         return Wave.load(path, sampling_rate=self._param.sampling_rate)
@@ -87,6 +89,10 @@ class AcousticConverter(object):
                 effective = numpy.r_[effective, False]
             if len(effective) > len(feature.f0):  # the divide move
                 effective = effective
+            if len(effective) < len(feature.f0):  # the divide move
+                effective = numpy.r_[effective, False]
+            if len(effective) > len(feature.f0):  # the divide move
+                effective = effective
             feature = feature.indexing(effective)
         return feature, effective
 
@@ -115,7 +121,7 @@ class AcousticConverter(object):
 
         if numpy.any(numpy.isnan(out.f0)):
             if self.f0_converter is not None:
-                out.f0 = self.f0_converter.convert(in_feature.f0)
+                out.f0 = self.f0_converter.convert(in_feature).f0
             else:
                 out.f0 = in_feature.f0
 

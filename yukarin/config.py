@@ -14,7 +14,8 @@ class DatasetConfig(NamedTuple):
     input_glob: Path
     target_glob: Path
     indexes_glob: Path
-    features: List[str]
+    in_features: List[str]
+    out_features: List[str]
     train_crop_size: int
     input_global_noise: float
     input_local_noise: float
@@ -83,7 +84,8 @@ def create_from_json(s: Union[str, Path]):
             input_glob=Path(d['dataset']['input_glob']),
             target_glob=Path(d['dataset']['target_glob']),
             indexes_glob=Path(d['dataset']['indexes_glob']),
-            features=d['dataset']['features'],
+            in_features=d['dataset']['in_features'],
+            out_features=d['dataset']['out_features'],
             train_crop_size=d['dataset']['train_crop_size'],
             input_global_noise=d['dataset']['input_global_noise'],
             input_local_noise=d['dataset']['input_local_noise'],
@@ -122,6 +124,10 @@ def create_from_json(s: Union[str, Path]):
 
 
 def backward_compatible(d: Dict):
+    if 'features' in d['dataset']:
+        d['dataset']['in_features'] = d['dataset']['features']
+        d['dataset']['out_features'] = d['dataset']['features']
+
     if 'optimizer' not in d['train']:
         d['train']['optimizer'] = dict(
             name='Adam',
