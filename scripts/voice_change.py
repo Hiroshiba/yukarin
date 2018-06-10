@@ -85,12 +85,12 @@ def process(p_in: Path, acoustic_converter: AcousticConverter, super_resolution:
         w_in = acoustic_converter.load_wave(p_in)
         f_in = acoustic_converter.extract_acoustic_feature(w_in)
         f_in_effective, effective = acoustic_converter.separate_effective(wave=w_in, feature=f_in)
-        f_low = acoustic_converter.convert(f_in_effective)
+        f_low = acoustic_converter.convert_loop(f_in_effective)
         f_low = acoustic_converter.combine_silent(effective=effective, feature=f_low)
         if filter_size is not None:
             f_low.f0 = AcousticConverter.filter_f0(f_low.f0, filter_size=filter_size)
         f_low = acoustic_converter.decode_spectrogram(f_low)
-        s_high = super_resolution.convert(f_low.sp.astype(numpy.float32))
+        s_high = super_resolution.convert_loop(f_low.sp.astype(numpy.float32))
 
         # target
         paths = glob.glob(str(dataset_target_wave_dir / p_in.stem) + '.*')
@@ -135,7 +135,7 @@ def process(p_in: Path, acoustic_converter: AcousticConverter, super_resolution:
         )
 
         rate = acoustic_converter.out_sampling_rate
-        wave = super_resolution(s_high, acoustic_feature=f_low_sr, sampling_rate=rate)
+        wave = super_resolution.convert_to_audio(s_high, acoustic_feature=f_low_sr, sampling_rate=rate)
         librosa.output.write_wav(y=wave.wave, path=str(output / (p_in.stem + '.wav')), sr=rate)
     except:
         pass

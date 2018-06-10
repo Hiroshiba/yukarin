@@ -128,6 +128,24 @@ class AcousticConverter(object):
         out.f0[~out.voiced] = 0
         return out
 
+    def convert_loop(self, in_feature: AcousticFeature, n_len: int = 512, n_wrap: int = 128):
+        out_feature_list: List[AcousticFeature] = []
+        N = len(in_feature.f0)
+        for i in numpy.arange(0, int(numpy.ceil(N / n_len))):
+            # convert with overwrapped
+            start = i * n_len
+            mi = max(start - n_wrap, 0)
+            ma = min(start + n_len + n_wrap, N)
+            f = in_feature.indexing(numpy.arange(mi, ma))
+            o_warp = self.convert(f)
+
+            # eliminate overwrap
+            ex_mi = start - mi
+            ex_len = min(ma - start, n_len)
+            o = o_warp.indexing(numpy.arange(ex_mi, ex_mi + ex_len))
+            out_feature_list.append(o)
+        return AcousticFeature.concatenate(out_feature_list)
+
     @staticmethod
     def filter_f0(f0: numpy.ndarray, filter_size: int):
         import scipy.ndimage
