@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Tuple, Dict, List, Iterable
+from typing import Dict, List, Iterable
 
 import numpy
 import pysptk
@@ -22,14 +22,33 @@ class AcousticFeature(object):
             ap: numpy.ndarray = numpy.nan,
             coded_ap: numpy.ndarray = numpy.nan,
             mc: numpy.ndarray = numpy.nan,
+            mc_wop: numpy.ndarray = numpy.nan,
             voiced: numpy.ndarray = numpy.nan,
     ) -> None:
+        assert mc is numpy.nan or mc_wop is numpy.nan
+
         self.f0 = f0
         self.sp = sp
         self.ap = ap
         self.coded_ap = coded_ap
         self.mc = mc
+        if mc_wop is not numpy.nan: self.mc_wop = mc_wop  # block overwrite
         self.voiced = voiced
+
+    @property
+    def mc_wop(self):
+        pass
+
+    @mc_wop.getter
+    def mc_wop(self) -> numpy.ndarray:
+        return self.mc[:, 1:] if self.mc is not numpy.nan else numpy.nan
+
+    @mc_wop.setter
+    def mc_wop(self, wop: numpy.ndarray):
+        assert self.mc is not numpy.nan or wop is not numpy.nan
+        if self.mc is numpy.nan:
+            self.mc = numpy.ones((wop.shape[0], wop.shape[1] + 1)) * numpy.nan
+        self.mc[:, 1:] = wop
 
     @staticmethod
     def dtypes():
@@ -94,6 +113,7 @@ class AcousticFeature(object):
             sp=fft_size // 2 + 1,
             ap=fft_size // 2 + 1,
             mc=order + 1,
+            mc_wop=order,
             voiced=1,
         )
 
@@ -175,32 +195,14 @@ class AcousticFeature(object):
         })
 
     def save(self, path: Path, ignores: Iterable[str] = None):
-        d = dict(
-            f0=self.f0,
-            sp=self.sp,
-            ap=self.ap,
-            coded_ap=self.coded_ap,
-            mc=self.mc,
-            voiced=self.voiced,
-        )
-        for k in ignores:
-            assert k in d
-            d[k] = numpy.nan
-
+        keys = filter(lambda k: k not in ignores, self.all_keys)
+        d = {k: getattr(self, k) for k in keys}
         numpy.save(path, d)
 
     @staticmethod
     def load(path: Path):
         d: Dict = numpy.load(path).item()
-        feature = AcousticFeature(
-            f0=d['f0'],
-            sp=d['sp'],
-            ap=d['ap'],
-            coded_ap=d['coded_ap'],
-            mc=d['mc'],
-            voiced=d['voiced'],
-        )
-        return feature
+        return AcousticFeature(**d)
 
     @staticmethod
     def mc2sp(mc: numpy.ndarray, sampling_rate: int, alpha: float):

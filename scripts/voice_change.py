@@ -21,6 +21,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--voice_changer_model_dir', '-vcmd', type=Path)
 parser.add_argument('--voice_changer_model_iteration', '-vcmi', type=int)
 parser.add_argument('--voice_changer_config', '-vcc', type=Path)
+parser.add_argument('--input_wave_scale', '-iws', type=float, default=1.0)
 parser.add_argument('--out_sampling_rate', '-osr', type=int)
 parser.add_argument('--filter_size', '-fs', type=int)
 parser.add_argument('--f0_trans_model_dir', '-ftmd', type=Path)
@@ -40,6 +41,7 @@ arguments = parser.parse_args()
 voice_changer_model_dir: Path = arguments.voice_changer_model_dir
 voice_changer_model_iteration: int = arguments.voice_changer_model_iteration
 voice_changer_config: Path = arguments.voice_changer_config
+input_wave_scale: float = arguments.input_wave_scale
 filter_size: int = arguments.filter_size
 super_resolution_model: Path = arguments.super_resolution_model
 super_resolution_config: Path = arguments.super_resolution_config
@@ -83,6 +85,7 @@ def process(p_in: Path, acoustic_converter: AcousticConverter, super_resolution:
             p_in = Path(glob.glob(str(dataset_input_wave_dir / p_in.stem) + '.*')[0])
 
         w_in = acoustic_converter.load_wave(p_in)
+        w_in.wave *= input_wave_scale
         f_in = acoustic_converter.extract_acoustic_feature(w_in)
         f_in_effective, effective = acoustic_converter.separate_effective(wave=w_in, feature=f_in)
         f_low = acoustic_converter.convert_loop(f_in_effective)
@@ -99,6 +102,9 @@ def process(p_in: Path, acoustic_converter: AcousticConverter, super_resolution:
             p_true = Path(paths[0])
             w_true = acoustic_converter.load_wave(p_true)
             f_true = acoustic_converter.extract_acoustic_feature(w_true)
+            vmin, vmax = numpy.log(f_true.sp).min(), numpy.log(f_true.sp).max()
+        else:
+            vmin, vmax = None, None
 
         # save figure
         fig = plt.figure(figsize=[36, 22])
@@ -107,21 +113,25 @@ def process(p_in: Path, acoustic_converter: AcousticConverter, super_resolution:
         plt.imshow(numpy.log(f_in.sp).T, aspect='auto', origin='reverse')
         plt.plot(f_in.f0, 'w')
         plt.colorbar()
+        plt.clim(vmin=vmin, vmax=vmax)
 
         plt.subplot(4, 1, 2)
         plt.imshow(numpy.log(f_low.sp).T, aspect='auto', origin='reverse')
         plt.plot(f_low.f0, 'w')
         plt.colorbar()
+        plt.clim(vmin=vmin, vmax=vmax)
 
         plt.subplot(4, 1, 3)
         plt.imshow(numpy.log(s_high).T, aspect='auto', origin='reverse')
         plt.colorbar()
+        plt.clim(vmin=vmin, vmax=vmax)
 
         if has_true:
             plt.subplot(4, 1, 4)
             plt.imshow(numpy.log(f_true.sp).T, aspect='auto', origin='reverse')
             plt.plot(f_true.f0, 'w')
             plt.colorbar()
+            plt.clim(vmin=vmin, vmax=vmax)
 
         fig.savefig(output / (p_in.stem + '.png'))
 
@@ -138,7 +148,8 @@ def process(p_in: Path, acoustic_converter: AcousticConverter, super_resolution:
         wave = super_resolution.convert_to_audio(s_high, acoustic_feature=f_low_sr, sampling_rate=rate)
         librosa.output.write_wav(y=wave.wave, path=str(output / (p_in.stem + '.wav')), sr=rate)
     except:
-        pass
+        import traceback
+        traceback.print_exc()
 
 
 def main():

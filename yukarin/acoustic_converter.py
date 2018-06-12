@@ -119,6 +119,11 @@ class AcousticConverter(object):
         out.ap = in_feature.ap
         out.voiced = in_feature.voiced
 
+        # copy power
+        if numpy.any(numpy.isnan(out.mc[:, 0])):
+            isnan = numpy.isnan(out.mc[:, 0])
+            out.mc[isnan, 0] = in_feature.mc[isnan, 0]
+
         if numpy.any(numpy.isnan(out.f0)):
             if self.f0_converter is not None:
                 out.f0 = self.f0_converter.convert(in_feature).f0
@@ -171,9 +176,9 @@ class AcousticConverter(object):
 
     def decode_acoustic_feature(self, feature: AcousticFeature):
         out = pyworld.synthesize(
-            f0=feature.f0.ravel(),
-            spectrogram=feature.sp,
-            aperiodicity=feature.ap,
+            f0=feature.f0.ravel().astype(numpy.float64),
+            spectrogram=feature.sp.astype(numpy.float64),
+            aperiodicity=feature.ap.astype(numpy.float64),
             fs=self.out_sampling_rate,
             frame_period=self._param.frame_period,
         )
