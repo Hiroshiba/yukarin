@@ -33,6 +33,7 @@ def convert_feature(path: Path, acoustic_converter: AcousticConverter):
 
     in_feature = acoustic_converter.load_acoustic_feature(path)
     out_feature = acoustic_converter.convert(in_feature)
+    out_feature = acoustic_converter.decode_spectrogram(out_feature)
 
     # save
     out_feature.save(path=out, ignores=arguments.ignore_feature)
