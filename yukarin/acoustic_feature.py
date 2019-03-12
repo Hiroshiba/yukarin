@@ -117,11 +117,8 @@ class AcousticFeature(object):
             voiced=1,
         )
 
-    @staticmethod
-    def extract(wave: Wave, frame_period, f0_floor, f0_ceil, fft_length, order, alpha, dtype):
-        x = wave.wave.astype(numpy.float64)
-        fs = wave.sampling_rate
-
+    @classmethod
+    def extract_f0(cls, x: numpy.ndarray, fs: int, frame_period: int, f0_floor: float, f0_ceil: float):
         f0, t = pyworld.harvest(
             x,
             fs,
@@ -129,8 +126,15 @@ class AcousticFeature(object):
             f0_floor=f0_floor,
             f0_ceil=f0_ceil,
         )
-
         f0 = pyworld.stonemask(x, f0, t, fs)
+        return f0, t
+
+    @classmethod
+    def extract(cls, wave: Wave, frame_period, f0_floor, f0_ceil, fft_length, order, alpha, dtype):
+        x = wave.wave.astype(numpy.float64)
+        fs = wave.sampling_rate
+
+        f0, t = cls.extract_f0(x=x, fs=fs, frame_period=frame_period, f0_floor=f0_floor, f0_ceil=f0_ceil)
         sp = pyworld.cheaptrick(x, f0, t, fs, fft_size=fft_length)
         ap = pyworld.d4c(x, f0, t, fs, fft_size=fft_length)
 
