@@ -85,14 +85,8 @@ class AcousticConverter(object):
         else:
             mse = librosa.feature.rmse(y=wave.wave, frame_length=self._param.fft_length, hop_length=hop) ** 2
             effective = (librosa.core.power_to_db(mse.squeeze()) > - threshold)
-            if len(effective) < len(feature.f0):  # the divide move
-                effective = numpy.r_[effective, False]
-            if len(effective) > len(feature.f0):  # the divide move
-                effective = effective
-            if len(effective) < len(feature.f0):  # the divide move
-                effective = numpy.r_[effective, False]
-            if len(effective) > len(feature.f0):  # the divide move
-                effective = effective
+            if round(len(effective) % self._param.fft_length) > 0:
+                effective = effective[:-1]
             feature = feature.indexing(effective)
         return feature, effective
 
