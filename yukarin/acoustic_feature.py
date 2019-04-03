@@ -141,6 +141,15 @@ class AcousticFeature(object):
         mc = pysptk.sp2mc(sp, order=order, alpha=alpha)
         coded_ap = pyworld.code_aperiodicity(ap, fs)
         voiced: numpy.ndarray = ~(f0 == 0)
+            
+        if len(x) % fft_length > 0:
+            f0 = f0[:-1]
+            t = t[:-1]
+            sp = sp[:-1]
+            ap = ap[:-1]
+            mc = mc[:-1]
+            coded_ap = coded_ap[:-1]
+            voiced = voiced[:-1]
 
         feature = AcousticFeature(
             f0=f0[:, None],
