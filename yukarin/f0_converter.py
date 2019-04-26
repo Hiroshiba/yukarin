@@ -14,10 +14,10 @@ class Statistics(NamedTuple):
 
 class F0Converter(object):
     def __init__(self, input_statistics: Path, target_statistics: Path) -> None:
-        d_in: Dict = numpy.load(input_statistics).item()
+        d_in: Dict = numpy.load(input_statistics, allow_pickle=True).item()
         self.input_statistics = Statistics(mean=d_in['mean'], var=d_in['var'])
 
-        d_tar: Dict = numpy.load(target_statistics).item()
+        d_tar: Dict = numpy.load(target_statistics, allow_pickle=True).item()
         self.target_statistics = Statistics(mean=d_tar['mean'], var=d_tar['var'])
 
     def convert(self, in_feature: AcousticFeature):
