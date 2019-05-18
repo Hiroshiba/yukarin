@@ -33,6 +33,7 @@ class ModelConfig(NamedTuple):
     discriminator_base_channels: int
     discriminator_extensive_layers: int
     weak_discriminator: bool
+    glu_generator: bool
 
 
 class LossConfig(NamedTuple):
@@ -102,6 +103,7 @@ def create_from_json(s: Union[str, Path]):
             discriminator_base_channels=d['model']['discriminator_base_channels'],
             discriminator_extensive_layers=d['model']['discriminator_extensive_layers'],
             weak_discriminator=d['model']['weak_discriminator'],
+            glu_generator=d['model']['glu_generator'],
         ),
         loss=LossConfig(
             mse=d['loss']['mse'],
@@ -124,6 +126,9 @@ def create_from_json(s: Union[str, Path]):
 
 
 def backward_compatible(d: Dict):
+    if 'glu_generator' not in d['model']:
+        d['model']['glu_generator'] = False
+
     if 'features' in d['dataset']:
         d['dataset']['in_features'] = d['dataset']['features']
         d['dataset']['out_features'] = d['dataset']['features']

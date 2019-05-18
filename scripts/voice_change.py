@@ -174,10 +174,12 @@ def main():
         f0_converter=f0_converter,
         out_sampling_rate=arguments.out_sampling_rate,
     )
+    print(f'Loaded acoustic converter model "{model}"')
 
     # super resolution
     sr_config = create_sr_config(super_resolution_config)
     super_resolution = SuperResolution(sr_config, super_resolution_model, gpu=gpu)
+    print(f'Loaded super resolution model "{super_resolution_model}"')
 
     # dataset's test
     input_paths = list(sorted([Path(p) for p in glob.glob(str(config.dataset.input_glob))]))

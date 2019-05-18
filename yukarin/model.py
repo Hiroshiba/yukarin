@@ -5,6 +5,13 @@ import chainer.links as L
 from yukarin.config import ModelConfig
 
 
+def glu(x: chainer.Variable):
+    assert x.shape[1] % 2 == 0
+    a, b = F.split_axis(x, 2, axis=1)
+    h = a * F.sigmoid(b)
+    return h
+
+
 class Convolution1D(chainer.links.ConvolutionND):
     def __init__(self, in_channels, out_channels, ksize, stride=1, pad=0,
                  nobias=False, initialW=None, initial_bias=None,
@@ -71,44 +78,48 @@ class CBR(chainer.Chain):
 
 
 class Encoder(chainer.Chain):
-    def __init__(self, in_ch, base=64, extensive_layers=8) -> None:
+    def __init__(self, in_ch, base=64, extensive_layers=8, use_glu=False) -> None:
         super().__init__()
         w = chainer.initializers.Normal(0.02)
+        self.activation = activation = F.leaky_relu if not use_glu else glu
+        out_base = base if not use_glu else base * 2
         with self.init_scope():
             if extensive_layers > 0:
-                self.c0 = Convolution1D(in_ch, base * 1, 3, 1, 1, initialW=w)
+                self.c0 = Convolution1D(in_ch, out_base * 1, 3, 1, 1, initialW=w)
             else:
-                self.c0 = Convolution1D(in_ch, base * 1, 1, 1, 0, initialW=w)
+                self.c0 = Convolution1D(in_ch, out_base * 1, 1, 1, 0, initialW=w)
 
             _choose = lambda i: 'down' if i < extensive_layers else 'same'
-            self.c1 = CBR(base * 1, base * 2, bn=True, sample=_choose(1), activation=F.leaky_relu, dropout=False)
-            self.c2 = CBR(base * 2, base * 4, bn=True, sample=_choose(2), activation=F.leaky_relu, dropout=False)
-            self.c3 = CBR(base * 4, base * 8, bn=True, sample=_choose(3), activation=F.leaky_relu, dropout=False)
-            self.c4 = CBR(base * 8, base * 8, bn=True, sample=_choose(4), activation=F.leaky_relu, dropout=False)
-            self.c5 = CBR(base * 8, base * 8, bn=True, sample=_choose(5), activation=F.leaky_relu, dropout=False)
-            self.c6 = CBR(base * 8, base * 8, bn=True, sample=_choose(6), activation=F.leaky_relu, dropout=False)
-            self.c7 = CBR(base * 8, base * 8, bn=True, sample=_choose(7), activation=F.leaky_relu, dropout=False)
+            self.c1 = CBR(base * 1, out_base * 2, bn=True, sample=_choose(1), activation=activation, dropout=False)
+            self.c2 = CBR(base * 2, out_base * 4, bn=True, sample=_choose(2), activation=activation, dropout=False)
+            self.c3 = CBR(base * 4, out_base * 8, bn=True, sample=_choose(3), activation=activation, dropout=False)
+            self.c4 = CBR(base * 8, out_base * 8, bn=True, sample=_choose(4), activation=activation, dropout=False)
+            self.c5 = CBR(base * 8, out_base * 8, bn=True, sample=_choose(5), activation=activation, dropout=False)
+            self.c6 = CBR(base * 8, out_base * 8, bn=True, sample=_choose(6), activation=activation, dropout=False)
+            self.c7 = CBR(base * 8, out_base * 8, bn=True, sample=_choose(7), activation=activation, dropout=False)
 
     def __call__(self, x):
-        hs = [F.leaky_relu(self.c0(x))]
+        hs = [self.activation(self.c0(x))]
         for i in range(1, 8):
             hs.append(self['c%d' % i](hs[i - 1]))
         return hs
 
 
 class Decoder(chainer.Chain):
-    def __init__(self, out_ch, base=64, extensive_layers=8) -> None:
+    def __init__(self, out_ch, base=64, extensive_layers=8, use_glu=False) -> None:
         super().__init__()
         w = chainer.initializers.Normal(0.02)
+        activation = F.relu if not use_glu else glu
+        out_base = base if not use_glu else base * 2
         with self.init_scope():
             _choose = lambda i: 'up' if i >= 8 - extensive_layers else 'same'
-            self.c0 = CBR(base * 8, base * 8, bn=True, sample=_choose(0), activation=F.relu, dropout=True)
-            self.c1 = CBR(base * 16, base * 8, bn=True, sample=_choose(1), activation=F.relu, dropout=True)
-            self.c2 = CBR(base * 16, base * 8, bn=True, sample=_choose(2), activation=F.relu, dropout=True)
-            self.c3 = CBR(base * 16, base * 8, bn=True, sample=_choose(3), activation=F.relu, dropout=False)
-            self.c4 = CBR(base * 16, base * 4, bn=True, sample=_choose(4), activation=F.relu, dropout=False)
-            self.c5 = CBR(base * 8, base * 2, bn=True, sample=_choose(5), activation=F.relu, dropout=False)
-            self.c6 = CBR(base * 4, base * 1, bn=True, sample=_choose(6), activation=F.relu, dropout=False)
+            self.c0 = CBR(base * 8, out_base * 8, bn=True, sample=_choose(0), activation=activation, dropout=True)
+            self.c1 = CBR(base * 16, out_base * 8, bn=True, sample=_choose(1), activation=activation, dropout=True)
+            self.c2 = CBR(base * 16, out_base * 8, bn=True, sample=_choose(2), activation=activation, dropout=True)
+            self.c3 = CBR(base * 16, out_base * 8, bn=True, sample=_choose(3), activation=activation, dropout=False)
+            self.c4 = CBR(base * 16, out_base * 4, bn=True, sample=_choose(4), activation=activation, dropout=False)
+            self.c5 = CBR(base * 8, out_base * 2, bn=True, sample=_choose(5), activation=activation, dropout=False)
+            self.c6 = CBR(base * 4, out_base * 1, bn=True, sample=_choose(6), activation=activation, dropout=False)
 
             if extensive_layers > 0:
                 self.c7 = Convolution1D(base * 2, out_ch, 3, 1, 1, initialW=w)
@@ -127,11 +138,11 @@ class Decoder(chainer.Chain):
 
 
 class Predictor(chainer.Chain):
-    def __init__(self, in_ch, out_ch, base=64, extensive_layers=8) -> None:
+    def __init__(self, in_ch, out_ch, base=64, extensive_layers=8, use_glu=False) -> None:
         super().__init__()
         with self.init_scope():
-            self.encoder = Encoder(in_ch, base=base, extensive_layers=extensive_layers)
-            self.decoder = Decoder(out_ch, base=base, extensive_layers=extensive_layers)
+            self.encoder = Encoder(in_ch, base=base, extensive_layers=extensive_layers, use_glu=use_glu)
+            self.decoder = Decoder(out_ch, base=base, extensive_layers=extensive_layers, use_glu=use_glu)
 
     def __call__(self, x):
         return self.decoder(self.encoder(x))
@@ -172,6 +183,7 @@ def create_predictor(config: ModelConfig):
         out_ch=config.out_channels,
         base=config.generator_base_channels,
         extensive_layers=config.generator_extensive_layers,
+        use_glu=config.glu_generator,
     )
 
 
