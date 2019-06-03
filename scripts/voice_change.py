@@ -12,7 +12,7 @@ from become_yukarin import SuperResolution
 from become_yukarin.config.sr_config import create_from_json as create_sr_config
 from become_yukarin.data_struct import AcousticFeature as BYAcousticFeature
 
-from yukarin import AcousticConverter
+from yukarin import AcousticConverter, AcousticFeature
 from yukarin.config import create_from_json as create_config
 from yukarin.f0_converter import F0Converter
 from yukarin.utility.json_utility import save_arguments
@@ -32,6 +32,7 @@ parser.add_argument('--super_resolution_config', '-src', type=Path)
 parser.add_argument('--input_statistics', '-is', type=Path)
 parser.add_argument('--target_statistics', '-ts', type=Path)
 parser.add_argument('--output_dir', '-o', type=Path, default='./output/')
+parser.add_argument('--disable_dataset_test', '-ddt', action='store_false')
 parser.add_argument('--dataset_input_wave_dir', '-diwd', type=Path)
 parser.add_argument('--dataset_target_wave_dir', '-dtwd', type=Path)
 parser.add_argument('--test_wave_dir', '-twd', type=Path)
@@ -51,6 +52,7 @@ f0_trans_config: Path = arguments.f0_trans_config
 input_statistics: Path = arguments.input_statistics
 target_statistics: Path = arguments.target_statistics
 output_dir: Path = arguments.output_dir
+disable_dataset_test: bool = arguments.disable_dataset_test
 dataset_input_wave_dir: Path = arguments.dataset_input_wave_dir
 dataset_target_wave_dir: Path = arguments.dataset_target_wave_dir
 test_wave_dir: Path = arguments.test_wave_dir
@@ -182,9 +184,12 @@ def main():
     print(f'Loaded super resolution model "{super_resolution_model}"')
 
     # dataset's test
-    input_paths = list(sorted([Path(p) for p in glob.glob(str(config.dataset.input_glob))]))
-    numpy.random.RandomState(config.dataset.seed).shuffle(input_paths)
-    paths_test = input_paths[-config.dataset.num_test:]
+    if not disable_dataset_test:
+        input_paths = list(sorted([Path(p) for p in glob.glob(str(config.dataset.input_glob))]))
+        numpy.random.RandomState(config.dataset.seed).shuffle(input_paths)
+        paths_test = input_paths[-config.dataset.num_test:]
+    else:
+        paths_test = []
 
     # test data
     if test_wave_dir is not None:
@@ -192,8 +197,7 @@ def main():
 
     process_partial = partial(process, acoustic_converter=acoustic_converter, super_resolution=super_resolution)
     if gpu is None:
-        pool = multiprocessing.Pool()
-        pool.map(process_partial, paths_test)
+        list(multiprocessing.Pool().map(process_partial, paths_test))
     else:
         list(map(process_partial, paths_test))
 
