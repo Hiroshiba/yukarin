@@ -7,12 +7,12 @@ setup(
     url='https://github.com/Hiroshiba/yukarin',
     author='Kazuyuki Hiroshiba',
     author_email='hihokaruta@gmail.com',
-    description='Everyone become Yuduki Yukari with DeepLearning power.',
+    description='Everyone become Yuzuki Yukari with DeepLearning power.',
     license='MIT License',
     install_requires=[
         'numpy',
-        'chainer',
-        'librosa',
+        'chainer<6.0.0',
+        'librosa<0.7.0',
         'pysptk',
         'pyworld',
         'fastdtw',
@@ -20,6 +20,7 @@ setup(
     classifiers=[
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'License :: OSI Approved :: MIT License',
     ]
 )

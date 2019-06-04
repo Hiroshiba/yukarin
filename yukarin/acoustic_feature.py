@@ -141,7 +141,7 @@ class AcousticFeature(object):
         mc = pysptk.sp2mc(sp, order=order, alpha=alpha)
         coded_ap = pyworld.code_aperiodicity(ap, fs)
         voiced: numpy.ndarray = ~(f0 == 0)
-            
+
         if len(x) % fft_length > 0:
             f0 = f0[:-1]
             t = t[:-1]
@@ -214,7 +214,7 @@ class AcousticFeature(object):
 
     @staticmethod
     def load(path: Path):
-        d: Dict = numpy.load(path).item()
+        d: Dict = numpy.load(path, allow_pickle=True).item()
         return AcousticFeature(**d)
 
     @staticmethod

@@ -59,7 +59,7 @@ class AlignIndexes(object):
 
     @staticmethod
     def load(path: Path):
-        d = numpy.load(path).item()  # type: dict
+        d = numpy.load(path, allow_pickle=True).item()  # type: dict
         feature = AlignIndexes(
             feature1=d['feature1'],
             feature2=d['feature2'],

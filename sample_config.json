@@ -1,0 +1,62 @@
+{
+  "dataset": {
+    "acoustic_param": {
+      "alpha": 0.410,
+      "dtype": "float32",
+      "f0_ceil": 800,
+      "f0_floor": 71,
+      "fft_length": 1024,
+      "frame_period": 5,
+      "order": 8,
+      "pad_second": 0,
+      "sampling_rate": 24000,
+      "threshold_db": 25
+    },
+    "input_glob": "./input_feature/*.npy",
+    "target_glob": "./target_feature/*.npy",
+    "indexes_glob": "./aligned_indexes/*.npy",
+    "in_features": [
+      "mc"
+    ],
+    "out_features": [
+      "mc"
+    ],
+    "train_crop_size": 512,
+    "input_global_noise": 0.01,
+    "input_local_noise": 0.01,
+    "target_global_noise": 0.01,
+    "target_local_noise": 0.01,
+    "seed": 0,
+    "num_test": 5
+  },
+  "model": {
+    "in_channels": 9,
+    "out_channels": 9,
+    "generator_base_channels": 8,
+    "generator_extensive_layers": 8,
+    "discriminator_base_channels": 1,
+    "discriminator_extensive_layers": 5,
+    "weak_discriminator": true
+  },
+  "loss": {
+    "adversarial": 0,
+    "mse": 100
+  },
+  "project": {
+    "name": "",
+    "tags": []
+  },
+  "train": {
+    "batchsize": 8,
+    "gpu": 0,
+    "log_iteration": 250,
+    "snapshot_iteration": 10000,
+    "stop_iteration": null,
+    "optimizer": {
+      "alpha": 0.0002,
+      "beta1": 0.5,
+      "beta2": 0.999,
+      "name": "Adam"
+    }
+  }
+}
