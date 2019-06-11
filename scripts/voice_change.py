@@ -12,7 +12,7 @@ from become_yukarin import SuperResolution
 from become_yukarin.config.sr_config import create_from_json as create_sr_config
 from become_yukarin.data_struct import AcousticFeature as BYAcousticFeature
 
-from yukarin import AcousticConverter, AcousticFeature
+from yukarin import AcousticConverter
 from yukarin.config import create_from_json as create_config
 from yukarin.f0_converter import F0Converter
 from yukarin.utility.json_utility import save_arguments
@@ -24,6 +24,7 @@ parser.add_argument('--voice_changer_config', '-vcc', type=Path)
 parser.add_argument('--input_wave_scale', '-iws', type=float, default=1.0)
 parser.add_argument('--out_sampling_rate', '-osr', type=int)
 parser.add_argument('--filter_size', '-fs', type=int)
+parser.add_argument('--threshold', '-t', type=float)
 parser.add_argument('--f0_trans_model_dir', '-ftmd', type=Path)
 parser.add_argument('--f0_trans_model_iteration', '-ftmi', type=int)
 parser.add_argument('--f0_trans_config', '-ftc', type=Path)
@@ -44,6 +45,7 @@ voice_changer_model_iteration: int = arguments.voice_changer_model_iteration
 voice_changer_config: Path = arguments.voice_changer_config
 input_wave_scale: float = arguments.input_wave_scale
 filter_size: int = arguments.filter_size
+threshold: float = arguments.threshold
 super_resolution_model: Path = arguments.super_resolution_model
 super_resolution_config: Path = arguments.super_resolution_config
 f0_trans_model_dir: Path = arguments.f0_trans_model_dir
@@ -89,7 +91,7 @@ def process(p_in: Path, acoustic_converter: AcousticConverter, super_resolution:
         w_in = acoustic_converter.load_wave(p_in)
         w_in.wave *= input_wave_scale
         f_in = acoustic_converter.extract_acoustic_feature(w_in)
-        f_in_effective, effective = acoustic_converter.separate_effective(wave=w_in, feature=f_in)
+        f_in_effective, effective = acoustic_converter.separate_effective(wave=w_in, feature=f_in, threshold=threshold)
         f_low = acoustic_converter.convert_loop(f_in_effective)
         f_low = acoustic_converter.combine_silent(effective=effective, feature=f_low)
         if filter_size is not None:
