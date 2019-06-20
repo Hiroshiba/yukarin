@@ -48,7 +48,7 @@ python scripts/extract_align_indexes.py \
 声の高さの変換に必要な、周波数の統計量を入力・目標音声データそれぞれに対して求めます。
 
 ```bash
-python scripts/extract_acoustic_feature.py \
+python scripts/extract_f0_statistics.py \
     -i './input_feature/*' \
     -o './input_statistics.npy'
 ```
@@ -60,7 +60,7 @@ python scripts/extract_acoustic_feature.py \
 ### 学習する
 
 ```bash
-python scripts/train,py \
+python scripts/train.py \
     config.json \
     ./model_stage1/
 ```
