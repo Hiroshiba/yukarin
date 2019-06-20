@@ -2,6 +2,7 @@ numpy
 cupy<6.0.0
 chainer<6.0.0
 librosa<0.7.0
+optuna
 pysptk
 pyworld
 fastdtw

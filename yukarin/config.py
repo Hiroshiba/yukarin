@@ -1,9 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict, Any
-from typing import List
-from typing import NamedTuple
-from typing import Union
+from typing import Any, Dict, List, NamedTuple, Union
 
 from yukarin.param import AcousticParam
 from yukarin.utility.json_utility import JSONEncoder
@@ -77,6 +74,10 @@ def _namedtuple_to_dict(o: NamedTuple):
 
 def create_from_json(s: Union[str, Path]):
     d = json.load(open(s))
+    return create_from_dict(d)
+
+
+def create_from_dict(d: Dict[str, Any]):
     backward_compatible(d)
 
     return Config(
