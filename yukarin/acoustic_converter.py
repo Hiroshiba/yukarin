@@ -72,22 +72,25 @@ class AcousticConverter(object):
         :return: (effective feature, effective flags)
         """
         hop, length = wave.get_hop_and_length(frame_period=self._param.frame_period)
-        if threshold is None:
-            if self._param.threshold_db is not None:
-                effective = wave.get_effective_frame(
-                    threshold_db=self._param.threshold_db,
-                    fft_length=self._param.fft_length,
-                    frame_period=self._param.frame_period,
-                )
-                feature = feature.indexing(effective)
-            else:
-                effective = numpy.ones(length, dtype=bool)
-        else:
+
+        if threshold is None and self._param.threshold_db is None:
+            effective = numpy.ones(length, dtype=bool)
+            return feature, effective
+
+        if threshold is not None:
             mse = librosa.feature.rmse(y=wave.wave, frame_length=self._param.fft_length, hop_length=hop) ** 2
             effective = (librosa.core.power_to_db(mse.squeeze()) > - threshold)
-            if round(len(effective) % self._param.fft_length) > 0:
-                effective = effective[:-1]
-            feature = feature.indexing(effective)
+        else:
+            effective = wave.get_effective_frame(
+                threshold_db=self._param.threshold_db,
+                fft_length=self._param.fft_length,
+                frame_period=self._param.frame_period,
+            )
+
+        if round(len(effective) % self._param.fft_length) > 0:
+            effective = effective[:-1]
+        feature = feature.indexing(effective)
+
         return feature, effective
 
     def load_acoustic_feature(self, path: Path):
