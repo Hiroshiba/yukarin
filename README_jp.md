@@ -1,9 +1,12 @@
-# yukarin
-ディープラーニング声質変換の第１段階モデルの学習コード。
+# Yukarin: ディープラーニング声質変換の第１段階の学習コード
+このリポジトリは、[Become Yukarin: 誰でも好きなキャラの声になれるリポジトリ](https://github.com/Hiroshiba/become-yukarin)の、
+第１段階の学習コードを拡張したものです。
+
+[English README](./README.md)
 
 ## 推奨環境
-* Unix
-* Python3.6.3
+* Linux OS
+* Python 3.6
 
 ## 準備
 ### 必要なライブラリのインストール
@@ -34,8 +37,8 @@ python scripts/extract_acoustic_feature.py \
 ```
 
 ### データを揃える（アライメントする）
-入力と目標の音声データを時間方向に揃えます。
-次の例では、`input_dir`と`target_dir`のアライメントデータを`aligned_indexes`に出力します。
+入力と目標の音響特徴量を時間方向に揃えます。
+次の例では、`input_feature`と`target_feature`のアライメントデータを`aligned_indexes`に出力します。
 
 ```bash
 python scripts/extract_align_indexes.py \
@@ -45,7 +48,7 @@ python scripts/extract_align_indexes.py \
 ```
 
 ### 周波数の統計量を求める
-声の高さの変換に必要な、周波数の統計量を入力・目標音声データそれぞれに対して求めます。
+声の高さの変換に必要な、周波数の統計量を入力・目標データそれぞれに対して求めます。
 
 ```bash
 python scripts/extract_f0_statistics.py \
