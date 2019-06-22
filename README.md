@@ -1,5 +1,5 @@
 # Yukarin: train the first stage model for voice conversion
-This repository is refactoring the traingin code for the first stage model of
+This repository is refactoring the training code for the first stage model of
 [Bcome Yukarin: Convert your voice to favorite voice](https://github.com/Hiroshiba/become-yukarin).
 
 [Japanese README](./README_jp.md)
