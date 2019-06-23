@@ -48,7 +48,7 @@ python scripts/extract_align_indexes.py \
 ```
 
 ### 周波数の統計量を求める
-声の高さの変換に必要な、周波数の統計量を入力・目標データそれぞれに対して求めます。
+声の高さの変換に必要な周波数の統計量を、入力・目標データそれぞれに対して求めます。
 
 ```bash
 python scripts/extract_f0_statistics.py \
