@@ -11,7 +11,6 @@ from chainer import training
 from chainer.dataset import convert
 from chainer.iterators import MultiprocessIterator
 from chainer.training import extensions
-from chainerui.utils import save_args
 
 from utility.chainer_utility import TensorBoardReport
 from yukarin.config import create_from_json
@@ -104,5 +103,4 @@ trainer.extend(TensorBoardReport(), trigger=trigger_log)
 if trigger_stop is not None:
     trainer.extend(extensions.ProgressBar(trigger_stop))
 
-save_args(arguments, arguments.output)
 trainer.run()

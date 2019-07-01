@@ -6,7 +6,6 @@ pysptk
 pyworld
 fastdtw
 matplotlib
-chainerui
 tensorflow
 pillow
 tqdm
