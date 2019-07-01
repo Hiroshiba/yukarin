@@ -4,10 +4,8 @@ chainer<6.0.0
 librosa<0.7.0
 pysptk
 pyworld
-fastdtw
 matplotlib
 tensorflow
-pillow
 tqdm
 git+https://github.com/neka-nat/tensorboard-chainer
 git+https://github.com/Hiroshiba/become-yukarin
