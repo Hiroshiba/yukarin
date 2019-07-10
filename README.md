@@ -69,11 +69,30 @@ python scripts/train.py \
     ./model_stage1/
 ```
 
-### Train the second stage model
-Train the second stage model referring to [Second Stage Model](https://github.com/Hiroshiba/become-yukarin#second-stage-model) in [Become Yukarin](https://github.com/Hiroshiba/become-yukarin).
-
 ## Test
 Put the test input voice data in a directory (ex. `test_wav`), and run `voice_change.py`.
+
+```bash
+python scripts/voice_change.py \
+    --model_dir './model_stage1' \
+    --config_path './model_stage1/config.json' \
+    --input_statistics 'input_statistics.npy' \
+    --target_statistics 'target_statistics.npy' \
+    --output_sampling_rate 24000 \
+    --disable_dataset_test \
+    --test_wave_dir './test_wav/' \
+    --output_dir './output/'
+```
+
+## Advanced: with second stage model
+[Become Yukarin](https://github.com/Hiroshiba/become-yukarin)'s [Second Stage Model](https://github.com/Hiroshiba/become-yukarin#second-stage-model)
+can improve the quality of the converted voice.
+
+### Train
+Train the second stage model referring to [Second Stage Model](https://github.com/Hiroshiba/become-yukarin#second-stage-model) in [Become Yukarin](https://github.com/Hiroshiba/become-yukarin).
+
+### Test
+Put the test input voice data in a directory (ex. `test_wav`), and run `voice_change_with_second_stage.py`.
 
 ```bash
 python scripts/voice_change.py \

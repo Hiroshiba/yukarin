@@ -68,12 +68,31 @@ python scripts/train.py \
     ./model_stage1/
 ```
 
-### 第２段階モデルを学習する
-[become-yukarin](https://github.com/Hiroshiba/become-yukarin)の[第２段階の学習](https://github.com/Hiroshiba/become-yukarin#%E7%AC%AC%EF%BC%92%E6%AE%B5%E9%9A%8E%E3%81%AE%E5%AD%A6%E7%BF%92)を参考に、
-第２段階モデルを学習します。
-
 ## テスト
 テスト用の入力音声データをディレクトリ（例：`test_wav`）に配置し、`voice_change.py`を実行します。
+
+```bash
+python scripts/voice_change.py \
+    --model_dir './model_stage1' \
+    --config_path './model_stage1/config.json' \
+    --input_statistics 'input_statistics.npy' \
+    --target_statistics 'target_statistics.npy' \
+    --output_sampling_rate 24000 \
+    --disable_dataset_test \
+    --test_wave_dir './test_wav/' \
+    --output_dir './output/'
+```
+
+## 発展：第２段階モデル
+[Become Yukarin](https://github.com/Hiroshiba/become-yukarin)の[第２段階モデル](https://github.com/Hiroshiba/become-yukarin#%E7%AC%AC%EF%BC%92%E6%AE%B5%E9%9A%8E%E3%81%AE%E5%AD%A6%E7%BF%92)を使えば、
+変換結果の音声の品質を上げることができます。
+
+### 学習する
+[Become Yukarin](https://github.com/Hiroshiba/become-yukarin)の[第２段階の学習](https://github.com/Hiroshiba/become-yukarin#%E7%AC%AC%EF%BC%92%E6%AE%B5%E9%9A%8E%E3%81%AE%E5%AD%A6%E7%BF%92)を参考に、
+第２段階モデルを学習します。
+
+### テスト
+テスト用の入力音声データをディレクトリ（例：`test_wav`）に配置し、`voice_change_with_second_stage.py`を実行します。
 
 ```bash
 python scripts/voice_change.py \
