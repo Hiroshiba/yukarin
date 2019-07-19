@@ -95,7 +95,7 @@ python scripts/voice_change.py \
 テスト用の入力音声データをディレクトリ（例：`test_wav`）に配置し、`voice_change_with_second_stage.py`を実行します。
 
 ```bash
-python scripts/voice_change.py \
+python scripts/voice_change_with_second_stage.py \
     --voice_changer_model_dir './model_stage1' \
     --voice_changer_config './model_stage1/config.json' \
     --super_resolution_model './model_stage2/' \
