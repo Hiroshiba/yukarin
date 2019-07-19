@@ -95,7 +95,7 @@ Train the second stage model referring to [Second Stage Model](https://github.co
 Put the test input voice data in a directory (ex. `test_wav`), and run `voice_change_with_second_stage.py`.
 
 ```bash
-python scripts/voice_change.py \
+python scripts/voice_change_with_second_stage.py \
     --voice_changer_model_dir './model_stage1' \
     --voice_changer_config './model_stage1/config.json' \
     --super_resolution_model './model_stage2/' \
