@@ -42,8 +42,8 @@ python scripts/extract_acoustic_feature.py \
 
 ```bash
 python scripts/extract_align_indexes.py \
-    -i1 './input_feature/*' \
-    -i2 './target_feature/*' \
+    -i1 './input_feature/*.npy' \
+    -i2 './target_feature/*.npy' \
     -o './aligned_indexes/'
 ```
 
@@ -52,7 +52,7 @@ python scripts/extract_align_indexes.py \
 
 ```bash
 python scripts/extract_f0_statistics.py \
-    -i './input_feature/*' \
+    -i './input_feature/*.npy' \
     -o './input_statistics.npy'
 ```
 
