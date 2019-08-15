@@ -34,6 +34,10 @@ PYTHONPATH=`pwd` python scripts/foo.py
 python scripts/extract_acoustic_feature.py \
     -i './input_wav/*' \
     -o './input_feature/'
+
+python scripts/extract_acoustic_feature.py \
+    -i './target_wav/*' \
+    -o './target_feature/'
 ```
 
 ### データを揃える（アライメントする）
@@ -54,6 +58,10 @@ python scripts/extract_align_indexes.py \
 python scripts/extract_f0_statistics.py \
     -i './input_feature/*.npy' \
     -o './input_statistics.npy'
+
+python scripts/extract_f0_statistics.py \
+    -i './target_feature/*.npy' \
+    -o './target_statistics.npy'
 ```
 
 ## 学習

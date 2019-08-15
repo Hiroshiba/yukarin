@@ -34,6 +34,10 @@ Create input/target acoustic feature files from each voice data.
 python scripts/extract_acoustic_feature.py \
     -i './input_wav/*' \
     -o './input_feature/'
+
+python scripts/extract_acoustic_feature.py \
+    -i './target_wav/*' \
+    -o './target_feature/'
 ```
 
 ### Align data
@@ -55,6 +59,10 @@ Statistics are needed for voice pitch conversion.
 python scripts/extract_f0_statistics.py \
     -i './input_feature/.npy*' \
     -o './input_statistics.npy'
+
+python scripts/extract_f0_statistics.py \
+    -i './target_feature/.npy*' \
+    -o './target_statistics.npy'
 ```
 
 ## Train
