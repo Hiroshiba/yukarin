@@ -34,7 +34,6 @@ parser.add_argument('--dtype', type=str, default=base_acoustic_param.dtype)
 parser.add_argument('--ignore_feature', nargs='+', default=['sp', 'ap'])
 parser.add_argument('--enable_overwrite', action='store_true')
 arguments = parser.parse_args()
-pprint(vars(arguments))
 
 
 def generate_feature(path: Path):
@@ -85,6 +84,8 @@ def generate_feature(path: Path):
 
 
 def main():
+    pprint(vars(arguments))
+
     arguments.output.mkdir(exist_ok=True)
     save_arguments(arguments, arguments.output / 'arguments.json')
 

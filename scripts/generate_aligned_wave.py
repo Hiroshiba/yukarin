@@ -31,7 +31,6 @@ parser.add_argument('--frame_period', type=float, default=base_acoustic_param.fr
 parser.add_argument('--alpha', type=float, default=base_acoustic_param.alpha)
 parser.add_argument('--disable_overwrite', action='store_true')
 arguments = parser.parse_args()
-pprint(vars(arguments))
 
 
 def generate_aligned_wave(
@@ -72,6 +71,8 @@ def generate_aligned_wave(
 
 
 def main():
+    pprint(vars(arguments))
+
     arguments.output.mkdir(exist_ok=True)
     save_arguments(arguments, arguments.output / 'arguments.json')
 
