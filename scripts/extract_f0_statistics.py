@@ -13,7 +13,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--input_glob', '-i')
 parser.add_argument('--output', '-o', type=Path)
 arguments = parser.parse_args()
-pprint(vars(arguments))
 
 
 def load_f0(path: Path):
@@ -22,6 +21,8 @@ def load_f0(path: Path):
 
 
 def main():
+    pprint(vars(arguments))
+
     paths = [Path(p) for p in sorted(glob.glob(arguments.input_glob))]
 
     pool = multiprocessing.Pool()

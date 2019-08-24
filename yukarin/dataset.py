@@ -107,13 +107,13 @@ class Dataset(chainer.dataset.DatasetMixin):
         mask = encode_feature(make_mask(f_tar), targets=self.config.out_features)
 
         # padding
-        seed = numpy.random.randint(2 ** 32)
+        seed = numpy.random.randint(2 ** 31)
         input = random_pad(input, seed=seed, min_size=self.config.train_crop_size)
         target = random_pad(target, seed=seed, min_size=self.config.train_crop_size)
         mask = random_pad(mask, seed=seed, min_size=self.config.train_crop_size)
 
         # crop
-        seed = numpy.random.randint(2 ** 32)
+        seed = numpy.random.randint(2 ** 31)
         input = random_crop(input, seed=seed, crop_size=self.config.train_crop_size)
         target = random_crop(target, seed=seed, crop_size=self.config.train_crop_size)
         mask = random_crop(mask, seed=seed, crop_size=self.config.train_crop_size)
@@ -154,20 +154,20 @@ class CGDataset(chainer.dataset.DatasetMixin):
         mask_y = encode_feature(make_mask(f_y), targets=self.config.out_features)
 
         # padding
-        seed = numpy.random.randint(2 ** 32)
+        seed = numpy.random.randint(2 ** 31)
         x = random_pad(x, seed=seed, min_size=self.config.train_crop_size)
         mask_x = random_pad(mask_x, seed=seed, min_size=self.config.train_crop_size)
 
-        seed = numpy.random.randint(2 ** 32)
+        seed = numpy.random.randint(2 ** 31)
         y = random_pad(y, seed=seed, min_size=self.config.train_crop_size)
         mask_y = random_pad(mask_y, seed=seed, min_size=self.config.train_crop_size)
 
         # crop
-        seed = numpy.random.randint(2 ** 32)
+        seed = numpy.random.randint(2 ** 31)
         x = random_crop(x, seed=seed, crop_size=self.config.train_crop_size)
         mask_x = random_crop(mask_x, seed=seed, crop_size=self.config.train_crop_size)
 
-        seed = numpy.random.randint(2 ** 32)
+        seed = numpy.random.randint(2 ** 31)
         y = random_crop(y, seed=seed, crop_size=self.config.train_crop_size)
         mask_y = random_crop(mask_y, seed=seed, crop_size=self.config.train_crop_size)
 

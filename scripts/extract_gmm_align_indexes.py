@@ -43,7 +43,6 @@ parser.add_argument('--dtype', type=str, default='int64')
 parser.add_argument('--ignore_feature', nargs='+', default=('feature1', 'feature2'))
 parser.add_argument('--enable_overwrite', action='store_true')
 arguments = parser.parse_args()
-pprint(vars(arguments))
 
 # read parameters from speaker yml
 sconf1 = SpeakerYML(arguments.org_yml)
@@ -130,6 +129,8 @@ def generate_align_indexes(pair_path: Tuple[Path, Path]):
 
 
 def main():
+    pprint(vars(arguments))
+
     arguments.output.mkdir(exist_ok=True)
     save_arguments(arguments, arguments.output / 'arguments.json')
 

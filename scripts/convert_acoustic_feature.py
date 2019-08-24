@@ -23,7 +23,6 @@ parser.add_argument('--gpu', type=int, default=None)
 parser.add_argument('--ignore_feature', nargs='+', default=['sp', 'ap'])
 parser.add_argument('--enable_overwrite', action='store_true')
 arguments = parser.parse_args()
-pprint(vars(arguments))
 
 
 def convert_feature(path: Path, acoustic_converter: AcousticConverter):
@@ -40,6 +39,8 @@ def convert_feature(path: Path, acoustic_converter: AcousticConverter):
 
 
 def main():
+    pprint(vars(arguments))
+
     arguments.output.mkdir(exist_ok=True)
     save_arguments(arguments, arguments.output / 'arguments.json')
 

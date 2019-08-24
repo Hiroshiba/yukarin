@@ -28,7 +28,6 @@ parser.add_argument('--output_image', '-o', type=Path)
 parser.add_argument('--speaker_yml', type=Path)
 parser.add_argument('--pad_second', type=float, default=base_acoustic_param.pad_second)
 arguments = parser.parse_args()
-pprint(vars(arguments))
 
 # read parameters from speaker yml
 sconf = SpeakerYML(arguments.speaker_yml)
@@ -78,6 +77,8 @@ def calc_score(path: Path):
 
 
 def main():
+    pprint(vars(arguments))
+
     paths = [Path(p) for p in sorted(glob.glob(arguments.input_wave_glob))]
     pool = multiprocessing.Pool()
     it = pool.imap(calc_score, paths)

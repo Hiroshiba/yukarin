@@ -23,7 +23,6 @@ parser.add_argument('--aligned_index_glob', '-ai', type=Path)
 parser.add_argument('--output', '-o', type=Path)
 parser.add_argument('--enable_overwrite', action='store_true')
 arguments = parser.parse_args()
-pprint(vars(arguments))
 
 input_glob: Path = arguments.input_glob
 target_glob: Path = arguments.target_glob
@@ -53,6 +52,8 @@ def generate_file(pair_path: Tuple[Path, Path, Path]):
 
 
 def main():
+    pprint(vars(arguments))
+
     output.mkdir(exist_ok=True)
     save_arguments(arguments, output / 'arguments.json')
 

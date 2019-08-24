@@ -23,7 +23,6 @@ parser.add_argument('--dtype', type=str, default='int32')
 parser.add_argument('--ignore_feature', nargs='+', default=('feature1', 'feature2'))
 parser.add_argument('--enable_overwrite', action='store_true')
 arguments = parser.parse_args()
-pprint(vars(arguments))
 
 
 def generate_align_indexes(pair_path: Tuple[Path, Path]):
@@ -45,6 +44,8 @@ def generate_align_indexes(pair_path: Tuple[Path, Path]):
 
 
 def main():
+    pprint(vars(arguments))
+
     arguments.output.mkdir(exist_ok=True)
     save_arguments(arguments, arguments.output / 'arguments.json')
 
