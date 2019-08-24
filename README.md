@@ -25,7 +25,7 @@ PYTHONPATH=`pwd` python scripts/foo.py
 ## Create dataset
 ### Prepare voice data
 Put input/target voice data in two directories (ex. `input_wav` and `target_wav`).
-These data should be same file names or make them in same order when using [glob](https://docs.python.org/ja/3/library/glob.html).
+These data should be same file names.
 
 ### Create acoustic feature
 Create input/target acoustic feature files from each voice data.
@@ -72,8 +72,8 @@ Modify `input_glob`, `target_glob` and `indexes_glob` in `sample_config.json`, t
 ### Train
 
 ```bash
-python scripts/train.py \
-    config.json \
+python train.py \
+    sample_config.json \
     ./model_stage1/
 ```
 

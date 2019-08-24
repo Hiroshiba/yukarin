@@ -25,7 +25,7 @@ PYTHONPATH=`pwd` python scripts/foo.py
 ## データ作成
 ### 音声データを用意する
 入力音声データと、目標音声データを大量に用意し、別々のディレクトリ（例：`input_wav`と`target_wav`）に配置します。
-ファイル名は揃えるか、もしくは[glob](https://docs.python.org/ja/3/library/glob.html)の順序が同じになるようにします。
+ファイル名は同じである必要があります。
 
 ### 音響特徴量を切り出す
 入力と目標の音声データそれぞれの音響特徴量ファイルを出力します。
@@ -71,8 +71,8 @@ python scripts/extract_f0_statistics.py \
 ### 学習する
 
 ```bash
-python scripts/train.py \
-    config.json \
+python train.py \
+    sample_config.json \
     ./model_stage1/
 ```
 
