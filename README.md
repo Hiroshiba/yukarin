@@ -57,11 +57,11 @@ Statistics are needed for voice pitch conversion.
 
 ```bash
 python scripts/extract_f0_statistics.py \
-    -i './input_feature/.npy*' \
+    -i './input_feature/*.npy' \
     -o './input_statistics.npy'
 
 python scripts/extract_f0_statistics.py \
-    -i './target_feature/.npy*' \
+    -i './target_feature/*.npy' \
     -o './target_statistics.npy'
 ```
 
